@@ -84,7 +84,7 @@ export default function AccountsData() {
              dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
              transition-all duration-200 text-gray-800 dark:text-gray-100"
       >
-        <div className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
+        <div className="rounded-xl bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
             <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
@@ -112,7 +112,7 @@ export default function AccountsData() {
              dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
              transition-all duration-200 text-gray-800 dark:text-gray-100"
       >
-        <div className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
+        <div className="rounded-xl bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
             <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
