@@ -1,21 +1,126 @@
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 // import StatisticsChart from "../../components/ecommerce/StatisticsChart";
-
-
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { addTaskCount,addUser, addCountries } from "../../store/userSlice";
+import Loader from "../../components/loader";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTables from "../Tables/BasicTables";
 
+
 export default function InProgress() {
+  const user = useSelector((state: any) => state.user.users);
+  console.log("user",user);
+  const [inboxData, setInboxData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const taskCount = useSelector((state: any) => state.user.taskCount);
+  const [totalRecords] = useState(taskCount.inProgress);
+  const dispatch = useDispatch();
+
+  const columns:any = [
+    { header: "Task Name", accessor: "Name", filterType:"text",filterOptions: ["Active", "Inactive", "Pending"], },
+    { header: "Task Type", accessor: "TaskType", filterType:"select",filterOptions: ["Activedsfsfdsdfsf", "Inactive", "Pending"],  },
+    { header: "Status", accessor: "TaskStatus", filterType:"autocomplete", filterOptions: ["Active", "Inactive", "Pending"],  },
+    { header: "Account Names", accessor: "AccountNames" },
+    { header: "Buying Group Names", accessor: "BuyingGroupNames" },
+    { header: "Next", accessor: "FAO",filterType:"autocomplete" },
+    { header: "Creator", accessor: "Owner", filterType:"multiSelect", filterOptions: ["Actived", "Inactive", "Pending"],},
+    { header: "Created", accessor: "Created", filterType:"range" },
+    { header: "Last Modified", accessor: "LastModified" , filterType:"dateRange"},
+    { header: "Items", accessor: "ItemCount" },
+    { header: "Value", accessor: "OriginalValue" },
+    { header: "Floor Breaks", accessor: "FloorBreaks" },
+    { header: "Due", accessor: "Due" },
+    { header: "Country", accessor: "CountryName" },    
+  ];
+
+ const fetchData = async (arg: any, start: number, end: number) => {
+    console.log(arg, start, end);
+    setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        viewName: `dbo.Inbox_Tasks(${user.userId})`,
+        firstRow: start,
+        lastRow: end,
+        sortBy: "DeadlineOrdered",
+        sortByDirection: "asc",
+        filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`,
+        fieldList: "*",
+        timeout: 0,
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getData`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("API Response:", response.data);
+      setInboxData(response.data);
+      setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+  const fetchTasksCount = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Inbox/taskCounts/${user.userId}`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Task count API Response:", response.data);
+      dispatch(addTaskCount(response.data));
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchCountries = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Metadata/getUsersCountries/${user.userId}`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Countries API Response:", response.data);
+      dispatch(addCountries(response.data));
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchData("inprogress", 1, user.gridPageSize);
+  }, []);
+ useEffect(() => {
+    fetchTasksCount();
+    fetchCountries();
+  }, []);
+
+  console.log("columns", columns);
+  console.log("inboxData", inboxData);
+
   return (
     <>
+    <Loader isLoad={loading} />
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <div className="grid grid-cols-6 gap-4 md:gap-3">
         <div className="col-span-6 space-y-6 xl:col-span-7">
-          <EcommerceMetrics />
+         <EcommerceMetrics taskCount={taskCount}/>
 
           <MonthlySalesChart page={'In Progress'}/>
         </div>
@@ -23,7 +128,7 @@ export default function InProgress() {
         
         
         <div className="col-span-12 mt-8">
-          <BasicTables page={'In Progress'} />
+          <BasicTables page={'In Progress'} inboxData={inboxData} columns={columns}/>
         </div>
 
         
