@@ -23,7 +23,7 @@ export default function InProgress() {
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
   const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  
 
   const columns:any = [
     { header: "Task Name", accessor: "Name", filterType:"text",filterOptions: ["Active", "Inactive", "Pending"], },
@@ -136,7 +136,7 @@ export default function InProgress() {
 
   return (
     <>
-    <Loader isLoad={loading} />
+    {/* <Loader isLoad={loading} /> */}
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
@@ -154,6 +154,7 @@ export default function InProgress() {
           <BasicTables page={'In Progress'} inboxData={inboxData} columns={columns}/>
         </div>
  <div className="col-span-12 mt-8">
+  {inboxData.length > 0 &&(
  <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -164,7 +165,7 @@ export default function InProgress() {
             changeRecordsPerPage(val);
             //setPageChange(1); // reset to first page on change
           }}
-        />
+        />)}
         </div>
       </div>
     </>

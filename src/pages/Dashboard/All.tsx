@@ -8,12 +8,19 @@ import BasicTables from "../Tables/BasicTables";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Pagination from "../../components/Pagination";
 
 export default function All() {
   const user = useSelector((state: any) => state.user.users);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
+  const [totalRecords, setTotalRecords] = useState(1);
+  const [totalPages, setTotalPages] = useState(
+    Math.ceil(totalRecords / user.gridPageSize)
+  );
   const columns = [
     { header: "Task Name", accessor: "Name" },
     { header: "Task Type", accessor: "TaskType" },
@@ -42,7 +49,7 @@ export default function All() {
         sortByDirection: "asc",
         filter: `AND tab <> 'Inbox'`,
         fieldList: "*",
-        timeout: 0
+        timeout: 0,
       };
 
       // 👈 second argument is the body (data)
@@ -69,7 +76,7 @@ export default function All() {
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: `AND tab <> 'Inbox'`
+        filter: `AND tab <> 'Inbox'`,
       };
 
       // 👈 second argument is the body (data)
@@ -80,7 +87,7 @@ export default function All() {
       );
 
       console.log("All", response.data);
-      //setTotalRecords(response.data.count);
+      setTotalRecords(response.data.count);
       setLoading(false);
       return response.data;
     } catch (error: any) {
@@ -88,35 +95,62 @@ export default function All() {
       return null;
     }
   };
+  const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
+    setCurrentPage(pageNumber);
+    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    let end =
+      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+    console.log(start, end);
+    fetchData("All", start, end);
+  };
+
+  const changeRecordsPerPage = (recordsPerPage: any) => {
+    console.log("on count change", recordsPerPage);
+    setRecordsPerPage(recordsPerPage);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
+    setPageChange(1, recordsPerPage);
+  };
 
   useEffect(() => {
     //setLoading(true);
-    fetchData('All', 1, user.gridPageSize);
-    fetchCount('All');
-    
+    fetchData("All", 1, user.gridPageSize);
+    fetchCount("All");
+
     //setLoading(false);
   }, []);
   return (
     <>
-    <Loader isLoad={loading} />
+      <Loader isLoad={loading} />
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <div className="grid grid-cols-6 gap-4 md:gap-3">
         <div className="col-span-6 space-y-6 xl:col-span-7">
-          <EcommerceMetrics taskCount={taskCount}/>
+          <EcommerceMetrics taskCount={taskCount} />
 
-          <MonthlySalesChart page={'All'}/>
+          <MonthlySalesChart page={"All"} />
         </div>
 
-        
-        
         <div className="col-span-12 mt-8">
-          <BasicTables page={'All'} inboxData={inboxData} columns={columns}/>
+          <BasicTables page={"All"} inboxData={inboxData} columns={columns} />
         </div>
-
-        
+        <div className="col-span-12 mt-8">
+          {inboxData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setPageChange}
+              onRecordsPerPageChange={(val) => {
+                changeRecordsPerPage(val);
+                //setPageChange(1); // reset to first page on change
+              }}
+            />
+          )}
+        </div>
       </div>
     </>
   );

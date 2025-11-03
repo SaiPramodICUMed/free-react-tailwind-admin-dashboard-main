@@ -8,13 +8,21 @@ import BasicTables from "../Tables/BasicTables";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import Pagination from "../../components/Pagination";
 
 export default function Cancelled() {
   const user = useSelector((state: any) => state.user.users);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
-  const columns = [   
+  const [totalRecords] = useState(taskCount.cancelled);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
+  const [totalPages, setTotalPages] = useState(
+    Math.ceil(totalRecords / user.gridPageSize)
+  );
+
+  const columns = [
     { header: "Task Name", accessor: "Name" },
     { header: "Task Type", accessor: "TaskType" },
     { header: "Status", accessor: "TaskStatus" },
@@ -41,7 +49,7 @@ export default function Cancelled() {
         sortByDirection: "asc",
         filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`,
         fieldList: "*",
-        timeout: 0
+        timeout: 0,
       };
 
       // 👈 second argument is the body (data)
@@ -52,7 +60,7 @@ export default function Cancelled() {
       );
 
       console.log("API Response:", response.data);
-      setInboxData(response.data);      
+      setInboxData(response.data);
       setLoading(false);
       return response.data;
     } catch (error: any) {
@@ -60,15 +68,31 @@ export default function Cancelled() {
       return null;
     }
   };
+  const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
+    setCurrentPage(pageNumber);
+    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    let end =
+      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+    console.log(start, end);
+    fetchData("inprogress", start, end);
+  };
+
+  const changeRecordsPerPage = (recordsPerPage: any) => {
+    console.log("on count change", recordsPerPage);
+    setRecordsPerPage(recordsPerPage);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
+    setPageChange(1, recordsPerPage);
+  };
   useEffect(() => {
     //setLoading(true);
     //fetchCount('Cancelled');
-    fetchData('Cancelled', 1, user.gridPageSize);
+    fetchData("Cancelled", 1, user.gridPageSize);
     //setLoading(false);
   }, []);
   return (
     <>
-    <Loader isLoad={loading} />
+      <Loader isLoad={loading} />
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
@@ -77,16 +101,31 @@ export default function Cancelled() {
         <div className="col-span-6 space-y-6 xl:col-span-7">
           <EcommerceMetrics taskCount={taskCount} />
 
-          <MonthlySalesChart page={'Cancelled'}/>
+          <MonthlySalesChart page={"Cancelled"} />
         </div>
 
-        
-        
         <div className="col-span-12 mt-8">
-          <BasicTables page={'Cancelled'} inboxData={inboxData} columns={columns}/>
+          <BasicTables
+            page={"Cancelled"}
+            inboxData={inboxData}
+            columns={columns}
+          />
         </div>
-
-        
+        <div className="col-span-12 mt-8">
+          {inboxData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setPageChange}
+              onRecordsPerPageChange={(val) => {
+                changeRecordsPerPage(val);
+                //setPageChange(1); // reset to first page on change
+              }}
+            />
+          )}
+        </div>
       </div>
     </>
   );

@@ -8,12 +8,17 @@ import BasicTables from "../Tables/BasicTables";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import Pagination from "../../components/Pagination";
 
 export default function Completed() {
   const user = useSelector((state: any) => state.user.users);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
+  const [totalRecords] = useState(taskCount.completed);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
+  const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
   const columns = [
     { header: "Task Name", accessor: "Name" },
     { header: "Task Type", accessor: "TaskType" },
@@ -62,6 +67,23 @@ export default function Completed() {
       return null;
     }
   };
+  
+  const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage
+    setCurrentPage(pageNumber);
+    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    let end =
+      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+    console.log(start, end);
+    fetchData("inprogress", start, end);
+  };
+
+  const changeRecordsPerPage = (recordsPerPage: any) => {
+    console.log("on count change", recordsPerPage);
+    setRecordsPerPage(recordsPerPage);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    setPageChange(1, recordsPerPage);
+  };
   useEffect(() => {
     //setLoading(true);
     //fetchCount('Completed');
@@ -86,6 +108,21 @@ export default function Completed() {
         
         <div className="col-span-12 mt-8">
           <BasicTables page={'Completed'} inboxData={inboxData} columns={columns}/>
+        </div>
+          <div className="col-span-12 mt-8">
+          {inboxData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setPageChange}
+              onRecordsPerPageChange={(val) => {
+                changeRecordsPerPage(val);
+                //setPageChange(1); // reset to first page on change
+              }}
+            />
+          )}
         </div>
 
         

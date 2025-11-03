@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { addTaskCount,addUser, addCountries } from "../../store/userSlice";
 import Loader from "../../components/loader";
+import Pagination from "../../components/Pagination";
 
 export default function Home() {
   const user = useSelector((state: any) => state.user.users);
@@ -16,6 +17,9 @@ export default function Home() {
   const taskCount = useSelector((state: any) => state.user.taskCount);
   const [totalRecords] = useState(taskCount.inProgress);
   const dispatch = useDispatch();
+    const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
+  const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
 
   const columns = [
     { header: "Task Name", accessor: "Name" },
@@ -98,6 +102,23 @@ export default function Home() {
       return null;
     }
   };
+  
+  const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage
+    setCurrentPage(pageNumber);
+    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    let end =
+      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+    console.log(start, end);
+    fetchData("inprogress", start, end);
+  };
+
+  const changeRecordsPerPage = (recordsPerPage: any) => {
+    console.log("on count change", recordsPerPage);
+    setRecordsPerPage(recordsPerPage);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    setPageChange(1, recordsPerPage);
+  };
 
   useEffect(() => {
     fetchData('Inbox', 1, user.gridPageSize);
@@ -125,6 +146,20 @@ export default function Home() {
 
         <div className="col-span-12 mt-8">
           <BasicTables page={'Inbox'} inboxData={inboxData} columns={columns} />
+        </div>
+        <div className="col-span-12 mt-8">
+  {inboxData.length > 0 &&(
+ <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          recordsPerPage={recordsPerPage}
+          onPageChange={setPageChange}
+          onRecordsPerPageChange={(val) => {
+            changeRecordsPerPage(val);
+            //setPageChange(1); // reset to first page on change
+          }}
+        />)}
         </div>
 
 
