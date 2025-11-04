@@ -75,7 +75,7 @@ export default function Trash() {
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: `AND tab <> 'Inbox'`,
+        filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`
       };
 
       // 👈 second argument is the body (data)
@@ -85,7 +85,7 @@ export default function Trash() {
         { headers: { "Content-Type": "application/json" } } // optional config
       );
 
-      console.log("All", response.data);
+      console.log("Trash", response.data);
       setTotalRecords(response.data.count);
       setLoading(false);
       return response.data;
@@ -116,6 +116,9 @@ export default function Trash() {
     fetchData('Trash', 1, user.gridPageSize);
     //setLoading(false);
   }, []);
+  useEffect(() => {
+      setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    }, [recordsPerPage,totalRecords]);
   return (
     <>
     <Loader isLoad={loading} />

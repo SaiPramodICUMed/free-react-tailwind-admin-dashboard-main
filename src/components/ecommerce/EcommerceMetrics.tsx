@@ -81,21 +81,26 @@ const [all, setAll] = useState({});
     }
   };
 
-  const fetchAllCount = async (arg:any) => {
+  const fetchAllCount = async (arg: any) => {
+    console.log("test",arg);
+    //setLoading(true);
+    //setActiveTab(arg);
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: ` AND tab <> ${arg}`,
+        filter: `AND tab <> 'Inbox'`
       };
+
+      // 👈 second argument is the body (data)
       const response = await axios.post(
-        `https://vm-www-dprice01.icumed.com:5000/api/Metadata/getViewCount`,
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
         payload,
         { headers: { "Content-Type": "application/json" } } // optional config
       );
 
-      //console.log("Task count API Response:", response.data);
+      console.log("All", response.data);
       setAll(response.data);
-      //dispatch(addTaskCount(response.data));
+      //setLoading(false);
       return response.data;
     } catch (error: any) {
       console.error("Error fetching data:", error.message);
@@ -107,7 +112,7 @@ const [all, setAll] = useState({});
       fetchCompletedCount('Completed');
       fetchCancelledCount('Cancelled');
       fetchTrashCount('Trash');
-      fetchAllCount('Inbox');
+      fetchAllCount('All');
     }, []);
 
   return (
@@ -122,8 +127,8 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
-
+            {/* <GroupIcon className="text-gray-800 size-5 dark:text-white/90" /> */}
+          <img src="/images/icons/Inbox.png" alt="no image"></img>
           </div>
 
           {/* Text and Badge Section */}

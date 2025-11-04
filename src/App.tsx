@@ -28,6 +28,7 @@ import PricingDashboard from "./pages/Pricing/PricingDashboard";
 import GroupsData from "./pages/Pricing/GroupsData";
 import PriceListsData from "./pages/Pricing/PriceListsData";
 import PricingAccount from "./pages/Pricing/Accounts/Account";
+import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
 import PricingSite from "./pages/Pricing/Accounts/Site";
 import { Provider } from "react-redux";
 import { store, persistor } from "./store/store";
@@ -56,6 +57,7 @@ export default function App() {
             <Route index path="/pricingSite" element={<PricingSite />} />
             <Route index path="/groupsData" element={<GroupsData />} />
             <Route index path="/priceListsData" element={<PriceListsData />} />
+            <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

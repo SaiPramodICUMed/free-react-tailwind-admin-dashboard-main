@@ -15,8 +15,8 @@ export default function Cancelled() {
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
-  const [totalRecords] = useState(taskCount.cancelled);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
   const [totalPages, setTotalPages] = useState(
     Math.ceil(totalRecords / user.gridPageSize)
@@ -68,6 +68,35 @@ export default function Cancelled() {
       return null;
     }
   };
+
+  const fetchCount = async (arg: any) => {
+    console.log(arg);
+    setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        viewName: `dbo.Inbox_Tasks(${user.userId})`,
+        filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Cancelled",response.data);
+      setTotalRecords(response.data.count); 
+      setLoading(false); 
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
     setCurrentPage(pageNumber);
@@ -86,10 +115,13 @@ export default function Cancelled() {
   };
   useEffect(() => {
     //setLoading(true);
-    //fetchCount('Cancelled');
+    fetchCount('Cancelled');
     fetchData("Cancelled", 1, user.gridPageSize);
     //setLoading(false);
   }, []);
+  useEffect(() => {
+      setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    }, [recordsPerPage,totalRecords]);
   return (
     <>
       <Loader isLoad={loading} />

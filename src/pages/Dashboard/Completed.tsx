@@ -15,10 +15,11 @@ export default function Completed() {
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
-  const [totalRecords] = useState(taskCount.completed);
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
-  const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
+  const [totalRecords, setTotalRecords] = useState(1);
+    const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
+
   const columns = [
     { header: "Task Name", accessor: "Name" },
     { header: "Task Type", accessor: "TaskType" },
@@ -67,6 +68,33 @@ export default function Completed() {
       return null;
     }
   };
+
+  const fetchCount = async (arg: any) => {
+    console.log("fetchCount",arg);
+    setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        viewName: `dbo.Inbox_Tasks(${user.userId})`,
+        filter: `AND (  1 <> 1  OR tab = 'Completed' )  AND tab = 'Completed'`
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Completed", response.data);
+      setTotalRecords(response.data.count);
+      setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
   
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage
@@ -75,7 +103,7 @@ export default function Completed() {
     let end =
       pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
     console.log(start, end);
-    fetchData("inprogress", start, end);
+    fetchData("Completed", start, end);
   };
 
   const changeRecordsPerPage = (recordsPerPage: any) => {
@@ -86,10 +114,13 @@ export default function Completed() {
   };
   useEffect(() => {
     //setLoading(true);
-    //fetchCount('Completed');
+    fetchCount('Completed');
     fetchData('Completed', 1, user.gridPageSize);
     //setLoading(false);
   }, []);
+     useEffect(() => {
+      setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    }, [recordsPerPage,totalRecords]);
   return (
     <>
     <Loader isLoad={loading} />
