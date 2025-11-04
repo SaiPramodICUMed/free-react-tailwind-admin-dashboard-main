@@ -153,8 +153,13 @@ export default function InProgress() {
   const selected = () => {
     //console.log("selectedRows",selectedRows);
     const selected = selectedRows.filter((row: any) => row.checked);
+    if(selected.length===0){
+      alert("Please select at least one record");
+      return;
+    }else{
     console.log("selected", selected);
     dispatch(resetRecords(selected));
+    }
   };
 
   useEffect(() => {
@@ -170,7 +175,7 @@ export default function InProgress() {
 
   return (
     <>
-      <Loader isLoad={loading} />
+      {/* <Loader isLoad={loading} /> */}
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
