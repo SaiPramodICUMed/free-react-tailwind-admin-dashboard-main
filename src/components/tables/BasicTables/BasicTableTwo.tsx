@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 export default function BasicTableTwo<T extends Record<string, any>>({
   columns = [],
   data = [],
-}: { columns: any[]; data: T[] }) {
+  setSelected,
+}: { columns: any[]; data: T[] ; setSelected?: React.Dispatch<React.SetStateAction<T[]>>}) {
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
   );
@@ -28,7 +29,10 @@ export default function BasicTableTwo<T extends Record<string, any>>({
     const updated = [...tableData];
     updated[index].checked = !updated[index].checked;
     setTableData(updated);
-    console.log("Updated Row:", updated[index], "All Data:", updated);
+    
+      setSelected(updated);
+    
+    //console.log("Updated Row:", updated[index], "All Data:", updated);
   };
 
   return (
@@ -42,7 +46,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
             <tr>
               {/* ✅ Checkbox header */}
               <th className="px-4 py-3 font-medium text-white text-start text-sm w-[40px]">
-                <input
+                {/* <input
                   type="checkbox"
                   className="cursor-pointer accent-blue-600"
                   checked={tableData.length > 0 && tableData.every((r) => r.checked)}
@@ -52,7 +56,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                       prev.map((row) => ({ ...row, checked }))
                     );
                   }}
-                />
+                /> */}
               </th>
 
               {columns.map((col) => (

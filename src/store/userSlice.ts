@@ -4,11 +4,13 @@ interface UserState { /* fields */ }
 
 interface InboxTaskCountsResponse { /* fields */ }
 interface CountriesResponse { /* fields */ }
+interface SelectedRecords { /* fields */ }
 
 let initialState: any = {
   users: [{}],
   taskCount: {},
-  countries : [{}]
+  countries : [{}],
+  selectedRecords: [{}]
 };
 
 const userSlice = createSlice({
@@ -23,9 +25,12 @@ const userSlice = createSlice({
     },
     addCountries: (state, action: PayloadAction<CountriesResponse>) => {
       state.countries = action.payload ;
+    },
+    resetRecords: (state, action: PayloadAction<SelectedRecords>) => {
+      state.selectedRecords = action.payload ;
     }
   },
 });
 
-export const { addUser, addTaskCount, addCountries } = userSlice.actions;
+export const { addUser, addTaskCount, addCountries, resetRecords } = userSlice.actions;
 export default userSlice.reducer;

@@ -4,47 +4,73 @@ import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { addTaskCount,addUser, addCountries } from "../../store/userSlice";
+import { addTaskCount, addUser, addCountries, resetRecords } from "../../store/userSlice";
 import Loader from "../../components/loader";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
 //import Bar from "../../components/Bar";
-
+//import data from "../../data.json";
 
 export default function InProgress() {
   const user = useSelector((state: any) => state.user.users);
-  console.log("user",user);
+  //console.log("user",user);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
   const taskCount = useSelector((state: any) => state.user.taskCount);
   const [totalRecords] = useState(taskCount.inProgress);
   const dispatch = useDispatch();
- 
+
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
-  const [totalPages, setTotalPages] = useState(Math.ceil(totalRecords / user.gridPageSize));
-  
+  const [totalPages, setTotalPages] = useState(
+    Math.ceil(totalRecords / user.gridPageSize)
+  );
+  const [selectedRows, setSelectedRows] = useState([]);
 
-  const columns:any = [
-    { header: "Task Name", accessor: "Name", filterType:"text",filterOptions: ["Active", "Inactive", "Pending"], },
-    { header: "Task Type", accessor: "TaskType", filterType:"select",filterOptions: ["Activedsfsfdsdfsf", "Inactive", "Pending"],  },
-    { header: "Status", accessor: "TaskStatus", filterType:"autocomplete", filterOptions: ["Active", "Inactive", "Pending"],  },
+  const columns: any = [
+    {
+      header: "Task Name",
+      accessor: "Name",
+      filterType: "text",
+      filterOptions: ["Active", "Inactive", "Pending"],
+    },
+    {
+      header: "Task Type",
+      accessor: "TaskType",
+      filterType: "select",
+      filterOptions: ["Activedsfsfdsdfsf", "Inactive", "Pending"],
+    },
+    {
+      header: "Status",
+      accessor: "TaskStatus",
+      filterType: "autocomplete",
+      filterOptions: ["Active", "Inactive", "Pending"],
+    },
     { header: "Account Names", accessor: "AccountNames" },
     { header: "Buying Group Names", accessor: "BuyingGroupNames" },
-    { header: "Next", accessor: "FAO",filterType:"autocomplete" },
-    { header: "Creator", accessor: "Owner", filterType:"multiSelect", filterOptions: ["Actived", "Inactive", "Pending"],},
-    { header: "Created", accessor: "Created", filterType:"range" },
-    { header: "Last Modified", accessor: "LastModified" , filterType:"dateRange"},
+    { header: "Next", accessor: "FAO", filterType: "autocomplete" },
+    {
+      header: "Creator",
+      accessor: "Owner",
+      filterType: "multiSelect",
+      filterOptions: ["Actived", "Inactive", "Pending"],
+    },
+    { header: "Created", accessor: "Created", filterType: "range" },
+    {
+      header: "Last Modified",
+      accessor: "LastModified",
+      filterType: "dateRange",
+    },
     { header: "Items", accessor: "ItemCount" },
     { header: "Value", accessor: "OriginalValue" },
     { header: "Floor Breaks", accessor: "FloorBreaks" },
     { header: "Due", accessor: "Due" },
-    { header: "Country", accessor: "CountryName" },    
+    { header: "Country", accessor: "CountryName" },
   ];
 
- const fetchData = async (arg: any, start: number, end: number) => {
-    console.log(arg, start, end);
+  const fetchData = async (arg: any, start: number, end: number) => {
+    //console.log(arg, start, end);
     setLoading(true);
     //setActiveTab(arg);
     try {
@@ -108,67 +134,86 @@ export default function InProgress() {
   };
 
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
-    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
     setCurrentPage(pageNumber);
     let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
     let end =
       pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
-    console.log(start, end);
+    // console.log(start, end);
     fetchData("inprogress", start, end);
   };
 
   const changeRecordsPerPage = (recordsPerPage: any) => {
-    console.log("on count change", recordsPerPage);
+    // console.log("on count change", recordsPerPage);
     setRecordsPerPage(recordsPerPage);
-    setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
     setPageChange(1, recordsPerPage);
+  };
+
+  const selected = () => {
+    //console.log("selectedRows",selectedRows);
+    const selected = selectedRows.filter((row: any) => row.checked);
+    console.log("selected", selected);
+    dispatch(resetRecords(selected));
   };
 
   useEffect(() => {
     fetchData("inprogress", 1, user.gridPageSize);
   }, []);
- useEffect(() => {
+  useEffect(() => {
     fetchTasksCount();
     fetchCountries();
   }, []);
 
-  console.log("columns", columns);
-  console.log("inboxData", inboxData);
+  // console.log("columns", columns);
+  // console.log("inboxData", inboxData);
 
   return (
     <>
-    <Loader isLoad={loading} />
+      <Loader isLoad={loading} />
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <div className="grid grid-cols-6 gap-4 md:gap-3">
         <div className="col-span-6 space-y-6 xl:col-span-8">
-         <EcommerceMetrics taskCount={taskCount}/>
+          <EcommerceMetrics taskCount={taskCount} />
 
-          <MonthlySalesChart page={'In Progress'}/>
+          <MonthlySalesChart page={"In Progress"} />
           {/* <Bar/> */}
         </div>
 
-        
-        
         <div className="col-span-12 mt-8">
-          <BasicTables page={'In Progress'} inboxData={inboxData} columns={columns} checkBox={true}/>
+          <div className="flex justify-end p-0">
+            <button
+              onClick={selected}
+              className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors"
+            >
+              Create
+            </button>
+          </div>
+          <BasicTables
+            page={"In Progress"}
+            inboxData={inboxData}
+            columns={columns}
+            checkBox={true}
+            setSelectedRows={setSelectedRows}
+          />
         </div>
- <div className="col-span-12 mt-8">
-  {inboxData.length > 0 &&(
- <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalRecords={totalRecords}
-          recordsPerPage={recordsPerPage}
-          onPageChange={setPageChange}
-          onRecordsPerPageChange={(val) => {
-            changeRecordsPerPage(val);
-            //setPageChange(1); // reset to first page on change
-          }}
-          
-        />)}
+        <div className="col-span-12 mt-8">
+          {inboxData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setPageChange}
+              onRecordsPerPageChange={(val) => {
+                changeRecordsPerPage(val);
+                //setPageChange(1); // reset to first page on change
+              }}
+            />
+          )}
         </div>
       </div>
     </>
