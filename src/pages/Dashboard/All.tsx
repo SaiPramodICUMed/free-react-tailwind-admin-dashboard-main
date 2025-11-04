@@ -76,7 +76,7 @@ export default function All() {
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: `AND tab <> 'Inbox'`,
+        filter: `AND tab <> 'Inbox'`
       };
 
       // 👈 second argument is the body (data)
@@ -95,6 +95,9 @@ export default function All() {
       return null;
     }
   };
+
+
+  
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
     setCurrentPage(pageNumber);
@@ -119,6 +122,9 @@ export default function All() {
 
     //setLoading(false);
   }, []);
+  useEffect(() => {
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage))
+  }, [recordsPerPage, totalRecords]);
   return (
     <>
       <Loader isLoad={loading} />

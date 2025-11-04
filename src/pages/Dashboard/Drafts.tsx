@@ -16,7 +16,7 @@ export default function Drafts() {
   const [loading, setLoading] = useState(false);
    const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
-  const [totalRecords, setTotalRecords] = useState(1);
+  const [totalRecords] = useState(taskCount.draft);
   const [totalPages, setTotalPages] = useState(
     Math.ceil(totalRecords / user.gridPageSize)
   );
@@ -73,7 +73,7 @@ const fetchData = async (arg: any, start: number, end: number) => {
     let end =
       pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
     console.log(start, end);
-    fetchData("All", start, end);
+    fetchData("Draft", start, end);
   };
 
   const changeRecordsPerPage = (recordsPerPage: any) => {
@@ -83,37 +83,11 @@ const fetchData = async (arg: any, start: number, end: number) => {
     setPageChange(1, recordsPerPage);
   };
 
-     const fetchCount = async (arg: any) => {
-    console.log(arg);
-    setLoading(true);
-    //setActiveTab(arg);
-    try {
-      const payload = {
-        viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: `AND tab <> 'Inbox'`,
-      };
-
-      // 👈 second argument is the body (data)
-      const response = await axios.post(
-        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
-        payload,
-        { headers: { "Content-Type": "application/json" } } // optional config
-      );
-
-      console.log("All", response.data);
-      setTotalRecords(response.data.count);
-      setLoading(false);
-      return response.data;
-    } catch (error: any) {
-      console.error("Error fetching data:", error.message);
-      return null;
-    }
-  };
+     
   
 
   useEffect(() => {
     fetchData("Draft", 1, user.gridPageSize);
-    fetchCount("Draft");
   }, []);
   return (
     <>

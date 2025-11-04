@@ -110,7 +110,7 @@ export default function Home() {
     let end =
       pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
     console.log(start, end);
-    fetchData("inprogress", start, end);
+    fetchData("Inbox", start, end);
   };
 
   const changeRecordsPerPage = (recordsPerPage: any) => {
