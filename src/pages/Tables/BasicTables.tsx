@@ -11,7 +11,7 @@ interface MyComponentProps {
 
 
 export default function BasicTables({page,inboxData,columns}: MyComponentProps) {
-  console.log("tabledata",columns);
+ // console.log("tabledata",columns);
   return (
     
     <>

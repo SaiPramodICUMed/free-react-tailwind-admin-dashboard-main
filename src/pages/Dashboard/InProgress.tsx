@@ -9,6 +9,7 @@ import Loader from "../../components/loader";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
+//import Bar from "../../components/Bar";
 
 
 export default function InProgress() {
@@ -146,12 +147,13 @@ export default function InProgress() {
          <EcommerceMetrics taskCount={taskCount}/>
 
           <MonthlySalesChart page={'In Progress'}/>
+          {/* <Bar/> */}
         </div>
 
         
         
         <div className="col-span-12 mt-8">
-          <BasicTables page={'In Progress'} inboxData={inboxData} columns={columns}/>
+          <BasicTables page={'In Progress'} inboxData={inboxData} columns={columns} checkBox={true}/>
         </div>
  <div className="col-span-12 mt-8">
   {inboxData.length > 0 &&(
@@ -165,6 +167,7 @@ export default function InProgress() {
             changeRecordsPerPage(val);
             //setPageChange(1); // reset to first page on change
           }}
+          
         />)}
         </div>
       </div>
