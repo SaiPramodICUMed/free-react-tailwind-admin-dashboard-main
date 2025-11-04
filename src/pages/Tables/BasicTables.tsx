@@ -2,15 +2,17 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 // import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTableOne from "../../components/tables/BasicTables/BasicTableOne";
+import BasicTableTwo from "../../components/tables/BasicTables/BasicTableTwo";
 
 interface MyComponentProps {
   page: string;
   inboxData: [];
   columns: []; // optional
+  checkBox?: boolean;
 }
 
 
-export default function BasicTables({page,inboxData,columns}: MyComponentProps) {
+export default function BasicTables({page,inboxData,columns,checkBox}: MyComponentProps) {
  // console.log("tabledata",columns);
   return (
     
@@ -22,7 +24,8 @@ export default function BasicTables({page,inboxData,columns}: MyComponentProps) 
       <PageBreadcrumb pageTitle = {`${page} - Data`} />
       <div className="space-y-6">
         {/* <ComponentCard title="Basic Table 1"> */}
-          <BasicTableOne columns={columns} data={inboxData} />
+        {checkBox ? <BasicTableTwo columns={columns} data={inboxData} /> :
+          <BasicTableOne columns={columns} data={inboxData} />}
         {/* </ComponentCard> */}
       </div>
     </>
