@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function BasicTableTwo<T extends Record<string, any>>({
   columns = [],
@@ -7,6 +7,11 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
   );
+
+  // ✅ Keep tableData synced with incoming data
+  useEffect(() => {
+    setTableData(data.map((d) => ({ ...d, checked: d.checked ?? false })));
+  }, [data]);
 
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(
     null
@@ -23,7 +28,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
     const updated = [...tableData];
     updated[index].checked = !updated[index].checked;
     setTableData(updated);
-    console.log("Updated Row:", updated[index], "data", tableData);
+    console.log("Updated Row:", updated[index], "All Data:", updated);
   };
 
   return (
@@ -40,10 +45,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                 <input
                   type="checkbox"
                   className="cursor-pointer accent-blue-600"
-                  checked={
-                    tableData.length > 0 &&
-                    tableData.every((r) => r.checked)
-                  }
+                  checked={tableData.length > 0 && tableData.every((r) => r.checked)}
                   onChange={(e) => {
                     const checked = e.target.checked;
                     setTableData((prev) =>
