@@ -29,10 +29,13 @@ import GroupsData from "./pages/Pricing/GroupsData";
 import PriceListsData from "./pages/Pricing/PriceListsData";
 import PricingAccount from "./pages/Pricing/Accounts/Account";
 import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
+import TaskDetails from "./pages/Pricing/Accounts/TaskDetails";
 import PricingSite from "./pages/Pricing/Accounts/Site";
 import { Provider } from "react-redux";
 import { store, persistor } from "./store/store";
 import { PersistGate } from "redux-persist/integration/react";
+import PricingTable from "./pages/Pricing/PricingTable";
+import AddItem from "./pages/Pricing/AddItem";
 
 export default function App() {
   return (
@@ -58,6 +61,9 @@ export default function App() {
             <Route index path="/groupsData" element={<GroupsData />} />
             <Route index path="/priceListsData" element={<PriceListsData />} />
             <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
+            <Route index path="/taskDetails" element={<TaskDetails />} />
+            <Route index path="/pricingTable" element={<PricingTable />} />
+            <Route index path="/addItem" element={<AddItem />} />
 
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />

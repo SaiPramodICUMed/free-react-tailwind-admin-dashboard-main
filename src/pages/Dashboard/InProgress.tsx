@@ -9,6 +9,7 @@ import Loader from "../../components/loader";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
+import { Navigate, useNavigate } from "react-router";
 //import Bar from "../../components/Bar";
 //import data from "../../data.json";
 
@@ -116,7 +117,7 @@ export default function InProgress() {
       return null;
     }
   };
-
+ const navigate = useNavigate();
   const fetchCountries = async () => {
     try {
       const response = await axios.get(
@@ -159,6 +160,7 @@ export default function InProgress() {
     }else{
     console.log("selected", selected);
     dispatch(resetRecords(selected));
+   navigate("/confirmSelectionAccount");
     }
   };
 
@@ -175,7 +177,7 @@ export default function InProgress() {
 
   return (
     <>
-      {/* <Loader isLoad={loading} /> */}
+      <Loader isLoad={loading} />
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
@@ -189,14 +191,14 @@ export default function InProgress() {
         </div>
 
         <div className="col-span-12 mt-8">
-          <div className="flex justify-end p-0">
+          {/* <div className="flex justify-end p-0">
             <button
               onClick={selected}
               className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors"
             >
               Create
             </button>
-          </div>
+          </div> */}
           <BasicTables
             page={"In Progress"}
             inboxData={inboxData}

@@ -128,7 +128,7 @@ const [all, setAll] = useState({});
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
             {/* <GroupIcon className="text-gray-800 size-5 dark:text-white/90" /> */}
-          <img src="/images/icons/Inbox.png" alt="no image"></img>
+          <img src="/images/icons/inbox.svg" alt="no image"></img>
           </div>
 
           {/* Text and Badge Section */}
@@ -155,7 +155,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+           <img src="/images/icons/drafts.svg" alt="no image"></img>
 
           </div>
 
@@ -183,7 +183,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/in_process.svg" alt="no image"></img>
 
           </div>
 
@@ -211,7 +211,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/awaiting_results.svg" alt="no image"></img>
 
           </div>
 
@@ -239,7 +239,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/completed.svg" alt="no image"></img>
 
           </div>
 
@@ -267,7 +267,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/cancel.svg" alt="no image"></img>
 
           </div>
 
@@ -295,7 +295,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/trash.svg" alt="no image"></img>
 
           </div>
 
@@ -323,7 +323,7 @@ const [all, setAll] = useState({});
         <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
           {/* Icon Container */}
           <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-            <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+            <img src="/images/icons/all.svg" alt="no image"></img>
 
           </div>
 

@@ -2,14 +2,26 @@ import axios from "axios";
 import PageMeta from "../../../components/common/PageMeta";
 import BasicTables from "../../Tables/BasicTables";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../../components/loader";
 import AccountsData from "../AccountsData";
+import { useNavigate } from "react-router";
+import { resetRecords } from "../../../store/userSlice";
+import Pagination from "../../../components/Pagination";
 
 export default function Account() {
   const user = useSelector((state: any) => state.user.users);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
+   const taskCount = useSelector((state: any) => state.user.taskCount);
+  const [totalRecords] = useState(taskCount.inProgress);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
+  const [totalPages, setTotalPages] = useState(
+    Math.ceil(totalRecords / user.gridPageSize)
+  );
+    const dispatch = useDispatch();
   const columns = [
     { header: "Account Name", accessor: "AccountName" },
     { header: "Account Number", accessor: "AccountNumber" },
@@ -23,6 +35,39 @@ export default function Account() {
     { header: "1 YR Sales (traced)", accessor: "GrossSalesTracing" },
     { header: "Country", accessor: "CountryName" },
   ];
+
+  const navigate = useNavigate();
+  
+
+  const selected = () => {
+      //console.log("selectedRows",selectedRows);
+      const selected = selectedRows.filter((row: any) => row.checked);
+      if(selected.length===0){
+        alert("Please select at least one record");
+        return;
+      }else{
+      console.log("selected", selected);
+      dispatch(resetRecords(selected));
+     navigate("/confirmSelectionAccount");
+      }
+    };
+
+    const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
+    setCurrentPage(pageNumber);
+    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    let end =
+      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+    // console.log(start, end);
+    fetchData(start, end);
+  };
+
+  const changeRecordsPerPage = (recordsPerPage: any) => {
+    // console.log("on count change", recordsPerPage);
+    setRecordsPerPage(recordsPerPage);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
+    setPageChange(1, recordsPerPage);
+  };
 
   const fetchData = async (start: number, end: number) => {
     //console.log(arg);
@@ -73,9 +118,32 @@ export default function Account() {
           <AccountsData/>
         </div>
         <div className="col-span-12 mt-8">
-          <BasicTables page={'Pricing - Account'} inboxData={inboxData} columns={columns} />
+          <div className="flex justify-end p-0">
+            <button
+              onClick={selected}
+              className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors"
+            >
+              Create
+            </button>
+          </div>
+          <BasicTables page={'Pricing - Account'} inboxData={inboxData} columns={columns} checkBox={true}
+            setSelectedRows={setSelectedRows}/>
         </div>
-
+<div className="col-span-12 mt-8">
+          {inboxData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalRecords={totalRecords}
+              recordsPerPage={recordsPerPage}
+              onPageChange={setPageChange}
+              onRecordsPerPageChange={(val) => {
+                changeRecordsPerPage(val);
+                //setPageChange(1); // reset to first page on change
+              }}
+            />
+          )}
+        </div>
 
       </div>
     </>

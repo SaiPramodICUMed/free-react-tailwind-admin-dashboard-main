@@ -1,5 +1,7 @@
+import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
-
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 type ItemsSelection = "blank" | "advanced";
 
 type Props = {
@@ -33,8 +35,8 @@ const ConfirmSelection: React.FC<Props> = ({
   dataPeriod = "1 year",
   taskType = "Quote/Offer",
   customerSegment = "high potential customer",
-  currency = "USD",
-  priceListType = "Direct",
+  currency = "",
+  priceListType = "",
   itemsSelection = "blank",
   customerName = "AbbVie GmbH & Co. KG",
   onBack,
@@ -53,7 +55,11 @@ const ConfirmSelection: React.FC<Props> = ({
     if (typeof window === "undefined") return false;
     return window.innerWidth <= mobileBreakpoint;
   });
-
+const user = useSelector((state: any) => state.user.users);
+const [taskTypes, setTaskTypes] = useState([]);
+const [currencies, setCurrencies] = useState([]);
+const [priceListTypes, setPriceListTypes] = useState([]);
+const selected = useSelector((state: any) => state.user.selectedRecords);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= mobileBreakpoint);
     window.addEventListener("resize", handleResize);
@@ -71,6 +77,105 @@ const ConfirmSelection: React.FC<Props> = ({
     onChangeItemsSelection && onChangeItemsSelection(v);
   };
 
+  const fetchTaskType = async () => {
+    //console.log(arg, start, end);
+    //setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        userId: user.userId
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Pricing/getTaskTypes`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Task Types API Response:", response.data);
+      setTaskTypes(response.data);
+      //setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchPriceListType = async () => {
+    //console.log(arg, start, end);
+    //setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        viewName: `lkpDirectIndirect`,
+        sortBy: "",
+        sortByDirection: "",
+        filter: ``,
+        fieldList: "[Id] AS Value, Name as Text",
+        timeout: 0,
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getDataNoPaging`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Price List Types API Response:", response.data);
+      setPriceListTypes(response.data);
+      //setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchCurrencies = async () => {
+    //console.log(arg, start, end);
+    //setLoading(true);
+    //setActiveTab(arg);
+    try {
+      
+      // 👈 second argument is the body (data)
+      const response = await axios.get(
+        `https://10.2.6.130:5000/api/Pricing/getCurrencies`,
+        
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Currencies API Response:", response.data);
+      setCurrencies(response.data);
+      //setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+const navigate = useNavigate();
+const save = () => {
+      //console.log("selectedRows",selectedRows);
+      //const selected = selectedRows.filter((row: any) => row.checked);
+      if(selected.length===0){
+        //alert("Please select at least one record");
+        navigate("/taskDetails");
+      }else{
+      console.log("selected", selected);
+      //dispatch(resetRecords(selected));
+     navigate("/taskDetails");
+      }
+    };
+
+  useEffect(() => {
+    fetchTaskType();
+    fetchCurrencies();
+    fetchPriceListType();
+  }, []);
+
   return (
     <div>
       {/* Container */}
@@ -87,7 +192,7 @@ const ConfirmSelection: React.FC<Props> = ({
             </label>
             <input
               readOnly
-              value={taskName}
+              value={`Q - ${selected[0].AccountNumber} - ${selected[0].AccountName}`}
               className="flex-1 max-w-[600px] w-full px-2 py-2 border border-gray-300 rounded-sm bg-white"
             />
           </div>
@@ -118,8 +223,11 @@ const ConfirmSelection: React.FC<Props> = ({
                 onChange={handleSelectChange(onChangeTaskType)}
                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
               >
-                <option>Quote/Offer</option>
-                <option>Analysis</option>
+                {taskTypes?.map((option: any) => (
+              <option key={option.id} value={option.name}>
+                {option.name}
+              </option>
+            ))}
               </select>
             </div>
 
@@ -130,7 +238,7 @@ const ConfirmSelection: React.FC<Props> = ({
                 disabled
                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-200 rounded-sm bg-slate-100 text-slate-400"
               >
-                <option>{customerSegment}</option>
+                <option>{selected[0].SegmentName}</option>
               </select>
             </div>
 
@@ -141,9 +249,11 @@ const ConfirmSelection: React.FC<Props> = ({
                 onChange={handleSelectChange(onChangeCurrency)}
                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
               >
-                <option>USD</option>
-                <option>EUR</option>
-                <option>GBP</option>
+                {currencies?.map((option: any) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
               </select>
             </div>
 
@@ -157,8 +267,11 @@ const ConfirmSelection: React.FC<Props> = ({
                 onChange={handleSelectChange(onChangePriceListType)}
                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
               >
-                <option>Direct</option>
-                <option>Contract</option>
+                {priceListTypes?.map((option: any) => (
+              <option key={option.Value} value={option.Text}>
+                {option.Text}
+              </option>
+            ))}
               </select>
             </div>
           </div>
@@ -203,7 +316,7 @@ const ConfirmSelection: React.FC<Props> = ({
 
           <div className={`${isMobile ? "flex flex-col gap-2" : "flex items-center gap-4"}`}>
             <div className={`${isMobile ? "font-semibold" : "w-32 font-semibold"}`}>Customer(s)</div>
-            <a className="text-sky-700 ">{customerName}</a>
+            <a className="text-sky-700 ">{selected[0].AccountName}</a>
           </div>
         </div>
 
@@ -218,7 +331,7 @@ const ConfirmSelection: React.FC<Props> = ({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
+           onClick={save}
             className="bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-700 text-white px-4 py-1 rounded-md"
           >
             Confirm
