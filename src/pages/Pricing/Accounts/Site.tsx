@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Loader from "../../../components/loader";
 import AccountsData from "../AccountsData";
+import { useNavigate } from "react-router";
 
 export default function Site() {
   const user = useSelector((state: any) => state.user.users);
@@ -61,10 +62,15 @@ export default function Site() {
   useEffect(() => {
     fetchData(1, user.gridPageSize);
   }, []);
+    const navigate = useNavigate();
 
   return (
     <>
     <Loader isLoad={loading} />
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span className="font-medium" onClick={()=>{navigate('/pricingDashBoard')}}>Pricing</span> /
+          <span className="text-gray-500 font-medium">&nbsp;Accounts - Site</span>
+        </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"

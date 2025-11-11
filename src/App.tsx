@@ -28,6 +28,34 @@ import PricingDashboard from "./pages/Pricing/PricingDashboard";
 import GroupsData from "./pages/Pricing/GroupsData";
 import PriceListsData from "./pages/Pricing/PriceListsData";
 import PricingAccount from "./pages/Pricing/Accounts/Account";
+import CompletedTasks from "./pages/Pricing/ERPLoad/CompletedTasks";
+import Advanced from "./pages/Reports/Advanced";
+import BasicReports from "./pages/Reports/BasicReports";
+import Explorer from "./pages/Reports/Explorer";
+import SIA from "./pages/Reports/SIA";
+
+import Segmentation from "./pages/Strategy/Segmentation";
+import SegmentationGroup from "./pages/Strategy/SegmentationGroup";
+import TargetsAndFloors from "./pages/Strategy/TargetsAndFloors";
+import ApprovalControls from "./pages/Strategy/ApprovalControls";
+import Competitors from "./pages/Strategy/Competitors";
+import Promotions from "./pages/Strategy/Promotions";
+
+import EmailAll from "./pages/Email/All";
+import Archive from "./pages/Email/Archive";
+import Unread from "./pages/Email/Unread";
+
+import Users from "./pages/Admin/Users";
+import Translation from "./pages/Admin/Translation";
+import CountrySettings from "./pages/Admin/CountrySettings";
+import Templates from "./pages/Admin/Templates";
+import EditApprovalRoles from "./pages/Admin/EditApprovalRoles";
+import EditColumnPermissions from "./pages/Admin/EditColumnPermissions";
+
+import AwaitingLoad from "./pages/Pricing/ERPLoad/AwaitingLoad";
+import ManuallyUpdating from "./pages/Pricing/ERPLoad/ManuallyUpdating";
+import LettingExpire from "./pages/Pricing/ERPLoad/LettingExpire";
+import RecentlyLoaded from "./pages/Pricing/ERPLoad/RecentlyLoaded";
 import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
 import TaskDetails from "./pages/Pricing/Accounts/TaskDetails";
 import PricingSite from "./pages/Pricing/Accounts/Site";
@@ -40,64 +68,91 @@ import AddItem from "./pages/Pricing/AddItem";
 export default function App() {
   return (
     <>
-     <Provider store={store}>
-       <PersistGate loading={null} persistor={persistor}>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/home" element={<Home />} />
-            <Route index path="/drafts" element={<Drafts />} />
-            <Route index path="/inprogress" element={<InProgress />} />
-            <Route index path="/awaitingresults" element={<AwaitingResults />} />
-            <Route index path="/completed" element={<Completed />} />
-            <Route index path="/cancelled" element={<Cancelled />} />
-            <Route index path="/trash" element={<Trash />} />
-            <Route index path="/all" element={<All />} />
-            <Route index path="/pricingDashboard" element={<PricingDashboard />} />
-            <Route index path="/pricingAccount" element={<PricingAccount />} />
-            <Route index path="/pricingSite" element={<PricingSite />} />
-            <Route index path="/groupsData" element={<GroupsData />} />
-            <Route index path="/priceListsData" element={<PriceListsData />} />
-            <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
-            <Route index path="/taskDetails" element={<TaskDetails />} />
-            <Route index path="/pricingTable" element={<PricingTable />} />
-            <Route index path="/addItem" element={<AddItem />} />
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <Router>
+            <ScrollToTop />
+            <Routes>
+              {/* Dashboard Layout */}
+              <Route element={<AppLayout />}>
+                <Route index path="/home" element={<Home />} />
+                <Route index path="/drafts" element={<Drafts />} />
+                <Route index path="/inprogress" element={<InProgress />} />
+                <Route index path="/awaitingresults" element={<AwaitingResults />} />
+                <Route index path="/completed" element={<Completed />} />
+                <Route index path="/cancelled" element={<Cancelled />} />
+                <Route index path="/trash" element={<Trash />} />
+                <Route index path="/all" element={<All />} />
+                <Route index path="/pricingDashboard" element={<PricingDashboard />} />
+                <Route index path="/pricingAccount" element={<PricingAccount />} />
+                <Route index path="/completedTasks" element={<CompletedTasks />} />
+                <Route index path="/pricingSite" element={<PricingSite />} />
+                <Route index path="/groupsData" element={<GroupsData />} />
+                <Route index path="/priceListsData" element={<PriceListsData />} />
+                <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
+                <Route index path="/taskDetails" element={<TaskDetails />} />
+                <Route index path="/pricingTable" element={<PricingTable />} />
+                <Route index path="/addItem" element={<AddItem />} />
+                <Route index path="/awaitingLoad" element={<AwaitingLoad />} />
+                <Route index path="/manuallyUpdating" element={<ManuallyUpdating />} />
+                <Route index path="/lettingExpire" element={<LettingExpire />} />
+                <Route index path="/recentlyLoaded" element={<RecentlyLoaded />} />
+                <Route index path="/advanced" element={<Advanced />} />
+                <Route index path="/basicReports" element={<BasicReports />} />
+                <Route index path="/explorer" element={<Explorer />} />
+                <Route index path="/sia" element={<SIA />} />
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
+                <Route index path="/segmentation" element={<Segmentation />} />
+                <Route index path="/segmentationGroup" element={<SegmentationGroup />} />
+                <Route index path="/targetsAndFloors" element={<TargetsAndFloors />} />
+                <Route index path="/approvalControls" element={<ApprovalControls />} />
+                <Route index path="/competitors" element={<Competitors />} />
+                <Route index path="/promotions" element={<Promotions />} />
 
-            {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
+                <Route index path="/emailAll" element={<EmailAll />} />
+                <Route index path="/unread" element={<Unread />} />
+                <Route index path="/archive" element={<Archive />} />
 
-            {/* Tables */}
-            {/* <Route path="/basic-tables" element={<BasicTables />} /> */}
+                <Route index path="/users" element={<Users />} />
+                <Route index path="/translation" element={<Translation />} />
+                <Route index path="/countrySettings" element={<CountrySettings />} />
+                <Route index path="/templates" element={<Templates />} />
+                <Route index path="/editApprovalRoles" element={<EditApprovalRoles />} />
+                <Route index path="/editColumnPermissions" element={<EditColumnPermissions />} />
 
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
+                {/* Others Page */}
+                <Route path="/profile" element={<UserProfiles />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/blank" element={<Blank />} />
 
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
-          </Route>
+                {/* Forms */}
+                <Route path="/form-elements" element={<FormElements />} />
 
-          {/* Auth Layout */}
-          <Route path="/" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+                {/* Tables */}
+                {/* <Route path="/basic-tables" element={<BasicTables />} /> */}
 
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-      </PersistGate>
+                {/* Ui Elements */}
+                <Route path="/alerts" element={<Alerts />} />
+                <Route path="/avatars" element={<Avatars />} />
+                <Route path="/badge" element={<Badges />} />
+                <Route path="/buttons" element={<Buttons />} />
+                <Route path="/images" element={<Images />} />
+                <Route path="/videos" element={<Videos />} />
+
+                {/* Charts */}
+                <Route path="/line-chart" element={<LineChart />} />
+                <Route path="/bar-chart" element={<BarChart />} />
+              </Route>
+
+              {/* Auth Layout */}
+              <Route path="/" element={<SignIn />} />
+              <Route path="/signup" element={<SignUp />} />
+
+              {/* Fallback Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </PersistGate>
       </Provider>
     </>
   );

@@ -2,10 +2,12 @@ import { useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
+import { useSelector } from "react-redux";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-
+  const user = useSelector((state: any) => state.user.users);
+  console.log('name', user);
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
@@ -23,11 +25,10 @@ export default function UserDropdown() {
           {/* Image */}
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">Sai Pramod</span>
+        <span className="block mr-1 font-medium text-theme-sm">{user.userName}</span>
         <svg
-          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
+          className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
+            }`}
           width="18"
           height="20"
           viewBox="0 0 18 20"
@@ -51,10 +52,10 @@ export default function UserDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-           Sai Pramod B
+            {user.userName}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-            sai.pramod@icumed.com
+            {user.email}
           </span>
         </div>
 

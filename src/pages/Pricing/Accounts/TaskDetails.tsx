@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Navigate, useNavigate } from "react-router";
 
 const TaskDetails: React.FC = () => {
   const [validFrom, setValidFrom] = useState<string>("immediately");
@@ -20,7 +21,7 @@ const TaskDetails: React.FC = () => {
     const { name, value } = e.target;
     setCustomer((prev) => ({ ...prev, [name]: value }));
   };
-
+const navigate = useNavigate();
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log({
@@ -209,7 +210,7 @@ const TaskDetails: React.FC = () => {
       <div className="flex justify-center mt-6">
         <button
           type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md shadow-md transition"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md shadow-md transition" onClick={()=>{navigate('/addItem')}}
         >
           Save
         </button>
