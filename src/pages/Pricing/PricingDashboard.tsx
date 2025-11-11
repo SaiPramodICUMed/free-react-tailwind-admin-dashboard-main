@@ -119,16 +119,24 @@ export default function PricingDashboard() {
                                 </div>
 
                                 {/* Text and Badge Section */}
-                                <div className="flex items-end justify-between mt-3">
-                                    <div>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Groups</h4>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+                                <div className="flex items-end justify-between mt-3 min-w-0">
+                                    <div className="min-w-0">
+                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
+                                            Groups
+                                        </h4>
                                     </div>
-                                    <Badge color="success" className="text-xs px-1 py-0.5">
-                                        <ArrowUpIcon className="size-3 mr-1" />
-                                        {totalRecords}
+
+                                    <Badge
+                                        color="success"
+                                        size="sm"
+                                        className="flex-shrink-0 text-xs px-1.5 py-0.5"
+                                    >
+                                        <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
+                                        <span className="truncate max-w-[50px] inline-block">{totalRecords}</span>
                                     </Badge>
                                 </div>
+
+
                             </div>
                         </Link>
 
@@ -147,22 +155,31 @@ export default function PricingDashboard() {
                                 </div>
 
                                 {/* Text and Badge Section */}
-                                <div className="flex items-end justify-between mt-3">
-                                    <div>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Price Lists</h4>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+
+
+                                <div className="flex items-end justify-between mt-3 min-w-0">
+                                    <div className="min-w-0">
+                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
+                                            Price Lists
+                                        </h4>
                                     </div>
-                                    <Badge color="success" className="text-xs px-1 py-0.5">
-                                        <ArrowUpIcon className="size-3 mr-1" />
-                                        {totalPriceListsRecords}
+
+                                    <Badge
+                                        color="success"
+                                        size="sm"
+                                        className="flex-shrink-0 text-xs px-1.5 py-0.5"
+                                    >
+                                        <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
+                                        <span className="truncate max-w-[50px] inline-block">{totalPriceListsRecords}</span>
                                     </Badge>
                                 </div>
+
                             </div>
                         </Link>
 
                         {/* <!-- Metric Item 4 --> */}
                         <Link
-                            to="../" // 👈 Navigate to your desired route
+                            to="../completedTasks" // 👈 Navigate to your desired route
                             className="block rounded-xl border border-gray-200 bg-white p-3 
              dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
              transition-all duration-200 text-gray-800 dark:text-gray-100"

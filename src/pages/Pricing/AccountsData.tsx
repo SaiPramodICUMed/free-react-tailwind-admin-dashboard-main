@@ -92,16 +92,23 @@ export default function AccountsData() {
           </div>
 
           {/* Text and Badge Section */}
-          <div className="flex items-end justify-between mt-3">
-            <div>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Account</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+          <div className="flex items-end justify-between mt-3 min-w-0">
+            <div className="min-w-0">
+              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
+                Account
+              </h4>
             </div>
-            <Badge color="success" className="text-xs px-1 py-0.5">
-              <ArrowUpIcon className="size-3 mr-1" />
-              {account}
+
+            <Badge
+              color="success"
+              size="sm"
+              className="flex-shrink-0 text-xs px-1.5 py-0.5"
+            >
+              <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
+              <span className="truncate max-w-[50px] inline-block">{account}</span>
             </Badge>
           </div>
+
         </div>
       </Link>
 
@@ -120,25 +127,34 @@ export default function AccountsData() {
           </div>
 
           {/* Text and Badge Section */}
-          <div className="flex items-end justify-between mt-3">
-            <div>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Site</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+
+
+          <div className="flex items-end justify-between mt-3 min-w-0">
+            <div className="min-w-0">
+              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
+                Site
+              </h4>
             </div>
-            <Badge color="success" className="text-xs px-1 py-0.5">
-              <ArrowUpIcon className="size-3 mr-1" />
-              {site}
+
+            <Badge
+              color="success"
+              size="sm"
+              className="flex-shrink-0 text-xs px-1.5 py-0.5"
+            >
+              <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
+              <span className="truncate max-w-[50px] inline-block">{site}</span>
             </Badge>
           </div>
+
         </div>
       </Link>
       <div className="p-3  md:p-4">
       </div>
-      <div className="flex items-center gap-5 mt-25 ml-10">
+      {/* <div className="flex items-center gap-5 mt-25 ml-10">
         <Button size="sm" variant="primary">
           Create New Customer
         </Button>
-      </div>
+      </div> */}
     </div>
 
   );

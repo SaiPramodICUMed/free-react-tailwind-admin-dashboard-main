@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import Pagination from "../../components/Pagination";
+import { useNavigate } from "react-router";
 
 export default function Trash() {
   const user = useSelector((state: any) => state.user.users);
@@ -116,12 +117,17 @@ export default function Trash() {
     fetchData('Trash', 1, user.gridPageSize);
     //setLoading(false);
   }, []);
+  const navigate = useNavigate();
   useEffect(() => {
       setTotalPages(Math.ceil(totalRecords / recordsPerPage))
     }, [recordsPerPage,totalRecords]);
   return (
     <>
     <Loader isLoad={loading} />
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span className="font-medium" onClick={()=>{navigate('/home')}}>Inbox</span> /
+          <span className="text-gray-500 font-medium">&nbsp;Trash</span>
+        </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"

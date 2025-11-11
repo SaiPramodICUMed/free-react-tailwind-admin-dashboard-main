@@ -8,6 +8,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { addTaskCount,addUser, addCountries } from "../../store/userSlice";
 import Loader from "../../components/loader";
 import Pagination from "../../components/Pagination";
+import { useNavigate } from "react-router";
 
 export default function Home() {
   const user = useSelector((state: any) => state.user.users);
@@ -127,10 +128,18 @@ export default function Home() {
     fetchTasksCount();
     fetchCountries();
   }, []);
+  const navigate = useNavigate();
+
 
   return (
     <>
     <Loader isLoad={loading} />
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span className="font-medium" onClick={()=>{navigate('/home')}}>Inbox</span> /
+          <span className="text-gray-500 font-medium" onClick={()=>{navigate('/home')}}>
+            &nbsp;Dashboard
+          </span>  <span className="text-gray-500 font-medium" onClick={()=>{navigate('/home')}}>-&nbsp;Inbox</span>
+        </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"

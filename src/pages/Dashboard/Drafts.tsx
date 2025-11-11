@@ -8,19 +8,20 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "../../components/Pagination";
+import { useNavigate } from "react-router";
 
 export default function Drafts() {
   const user = useSelector((state: any) => state.user.users);
   const taskCount = useSelector((state: any) => state.user.taskCount);
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
-   const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
   const [totalRecords] = useState(taskCount.draft);
   const [totalPages, setTotalPages] = useState(
     Math.ceil(totalRecords / user.gridPageSize)
   );
-  const columns = [   
+  const columns = [
     { header: "Task Name", accessor: "Name" },
     { header: "Task Type", accessor: "TaskType" },
     { header: "Status", accessor: "TaskStatus" },
@@ -34,7 +35,7 @@ export default function Drafts() {
     { header: "Floor Breaks", accessor: "FloorBreaks" },
     { header: "Country", accessor: "CountryName" },
   ];
-const fetchData = async (arg: any, start: number, end: number) => {
+  const fetchData = async (arg: any, start: number, end: number) => {
     console.log(arg, start, end);
     setLoading(true);
     //setActiveTab(arg);
@@ -83,30 +84,31 @@ const fetchData = async (arg: any, start: number, end: number) => {
     setPageChange(1, recordsPerPage);
   };
 
-     
-  
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData("Draft", 1, user.gridPageSize);
   }, []);
   return (
     <>
-    <Loader isLoad={loading} />
+      <Loader isLoad={loading} />
+      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+        <span className="font-medium" onClick={() => { navigate('/home') }}>Inbox</span> /
+        <span className="text-gray-500 font-medium">&nbsp;Drafts</span>
+      </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
       />
       <div className="grid grid-cols-6 gap-4 md:gap-3">
         <div className="col-span-6 space-y-6 xl:col-span-7">
-          <EcommerceMetrics taskCount={taskCount}/>
+          <EcommerceMetrics taskCount={taskCount} />
 
           <MonthlySalesChart page={'Drafts'} />
         </div>
-
-        
-        
         <div className="col-span-12 mt-8">
-          <BasicTables page={'Drafts'} inboxData={inboxData} columns={columns}/>
+          <BasicTables page={'Drafts'} inboxData={inboxData} columns={columns} />
         </div>
         <div className="col-span-12 mt-8">
           {inboxData.length > 0 && (
@@ -124,7 +126,7 @@ const fetchData = async (arg: any, start: number, end: number) => {
           )}
         </div>
 
-        
+
       </div>
     </>
   );

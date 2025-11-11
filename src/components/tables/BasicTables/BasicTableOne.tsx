@@ -18,6 +18,30 @@ export default function BasicTableOne<T extends Record<string, any>>({
     setTooltip({ text, x: rect.left + rect.width / 2, y: rect.top - 8 });
   };
 
+   const formatToDate = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "";
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  function getDaysFromToday(dateString: string): string {
+    if (!dateString) return "0 days";
+    const givenDate = new Date(dateString);
+    const today = new Date();
+
+    givenDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    const diffTime = today.getTime() - givenDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    return `- ${diffDays} days`;
+  }
+
   const hideTooltip = () => setTooltip(null);
   
   return (
@@ -27,7 +51,8 @@ export default function BasicTableOne<T extends Record<string, any>>({
     >
       <div className="max-w-full overflow-x-auto relative">
         <table className="min-w-full table-fixed">
-          <thead className="border-b border-gray-100 dark:border-white/[0.05] bg-blue-800">
+          {data.length > 0 && (
+            <thead className="border-b border-gray-100 dark:border-white/[0.05] bg-blue-800">
             <tr>
               {columns.map((col) => (
                 <th
@@ -39,13 +64,16 @@ export default function BasicTableOne<T extends Record<string, any>>({
               ))}
             </tr>
           </thead>
-
+          )}
           <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05] text-xs">
             {data.length > 0 ? (
               data.map((row, rowIndex) => (
                 <tr key={row.TaskId ?? rowIndex} className="hover:bg-gray-50">
                   {columns.map((col) => {
-                    const cellValue = row[col.accessor] ?? "-";
+                    const cellValue = (col.accessor === "UploadDate" || col.accessor === "Created" || col.accessor === "LastModified" || col.accessor === "StartDate" || col.accessor === "EndDate" || col.accessor === "LastSaleDate") ? formatToDate(row[col.accessor]) 
+                        : (col.accessor === "GrossSales" || col.accessor === "GM" || col.accessor === "GMPerc" || col.accessor === "YRSales" || col.accessor === "GrossMargin" || col.accessor === "GMPercent" || col.accessor === "GrossASP" || col.accessor === "GM_P" || col.accessor === "ManagerMarginFloor" || col.accessor === "SalesmanMarginFloor" || col.accessor === "SegManagerFloor" || col.accessor === "SegSalesmanFloor" || col.accessor === "SegTargetPrice" || col.accessor === "LastYearSales" || col.accessor === "YRSalesTracing") ? (row[col.accessor] == null || row[col.accessor] == undefined || row[col.accessor] == '') ? 0 : row[col.accessor]?.toFixed(2)
+                        : col.accessor === "Due" ? getDaysFromToday(row[col.accessor]) 
+                        : row[col.accessor] ?? "-";
                     return (
                       <td
                         key={`${rowIndex}-${col.accessor}`}

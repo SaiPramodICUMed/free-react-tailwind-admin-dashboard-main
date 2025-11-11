@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Pagination from "../../components/Pagination";
+import { useNavigate } from "react-router";
 
 export default function AwaitingResults() {
 
@@ -90,10 +91,14 @@ export default function AwaitingResults() {
   useEffect(() => {
     fetchData("AwaitingResults", 1, user.gridPageSize);
   }, []);
-  
+  const navigate = useNavigate();
   return (
     <>
     <Loader isLoad={loading} />
+    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+          <span className="font-medium" onClick={()=>{navigate('/home')}}>Inbox</span> /
+          <span className="text-gray-500 font-medium">&nbsp;Awaiting Results</span>
+        </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"

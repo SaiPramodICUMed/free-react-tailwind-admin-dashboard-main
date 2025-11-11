@@ -135,7 +135,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Inbox</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -163,7 +163,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Drafts</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -191,7 +191,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">In Progress</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -219,7 +219,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Awaiting Results</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -247,7 +247,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Completed</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -275,7 +275,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Cancelled</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -303,7 +303,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Trash</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
@@ -331,7 +331,7 @@ const [all, setAll] = useState({});
           <div className="flex items-end justify-between mt-3">
             <div>
               <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">All</h4>
-              <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4>
+              {/* <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Count</h4> */}
             </div>
             <Badge color="success" className="text-xs px-1 py-0.5">
               <ArrowUpIcon className="size-3 mr-1" />
