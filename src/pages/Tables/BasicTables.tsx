@@ -1,9 +1,10 @@
-import { useState } from "react";
+// import { useState } from "react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 // import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTableOne from "../../components/tables/BasicTables/BasicTableOne";
 import BasicTableTwo from "../../components/tables/BasicTables/BasicTableTwo";
+//import BasicTableWithFIlter from "../../components/tables/BasicTables/BasicTableWithFIlter";
 
 interface MyComponentProps {
   page: string;
@@ -27,10 +28,11 @@ export default function BasicTables({page,inboxData,columns,checkBox,setSelected
       {/* {selected.length} */}
       <PageBreadcrumb pageTitle = {`${page} - Data`} />
       <div className="space-y-6">
-        {/* <ComponentCard title="Basic Table 1"> */}
+       
         {checkBox ? <BasicTableTwo columns={columns} data={inboxData} setSelected={setSelectedRows}/> :
           <BasicTableOne columns={columns} data={inboxData} />}
-        {/* </ComponentCard> */}
+          {/* <BasicTableWithFIlter columns={columns} data={inboxData} /> */}
+       
       </div>
     </>
   );

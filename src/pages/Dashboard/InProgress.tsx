@@ -57,7 +57,7 @@ export default function InProgress() {
       filterType: "multiSelect",
       filterOptions: ["Actived", "Inactive", "Pending"],
     },
-    { header: "Created", accessor: "Created", filterType: "range" },
+    { header: "Created", accessor: "Created", filterType: "range",min: 20, max: 1057, },
     {
       header: "Last Modified",
       accessor: "LastModified",
