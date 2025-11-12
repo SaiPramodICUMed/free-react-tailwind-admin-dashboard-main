@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import UserDropdown from "../components/header/UserDropdown";
+import axios from "axios";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
@@ -15,6 +16,8 @@ const AppHeader: React.FC = () => {
       toggleMobileSidebar();
     }
   };
+
+  
 
   const toggleApplicationMenu = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
@@ -89,7 +92,7 @@ const AppHeader: React.FC = () => {
       </div>
 
       {/* === Right: User Dropdown === */}
-      <div className="flex items-center justify-end w-10 h-10">
+      <div className="flex items-center justify-end w-50 h-10">
         <UserDropdown />
       </div>
     </div>

@@ -103,7 +103,7 @@ const Translation: React.FC = () => {
       </div>
       {/* Responsive Table inside the same container */}
       <div className="w-full">
-        <BasicTables page="Admin-Templates" inboxData={inboxData} columns={columns} />
+        <BasicTables page="Admin-Translations" inboxData={inboxData} columns={columns} />
       </div>
       {inboxData?.length !== 0 && (
         <Pagination

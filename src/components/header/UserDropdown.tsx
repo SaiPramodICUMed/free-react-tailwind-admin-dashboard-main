@@ -1,16 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const user = useSelector((state: any) => state.user.users);
+  const [lastUpdated, setLastUpdated] = useState({});
   console.log('name', user);
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
+
+  const getLastUpdated = async () => {         
+    try {
+     
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Metadata/GetLastETLDate`,
+        
+        { headers: { "Content-Type": "application/json" } }
+      );
+  
+      if (response.status === 200) {
+        setLastUpdated(response.data);
+        //setInboxData(response.data);      
+        return response.data;
+      } else {
+        console.error("Login failed: Status", response.status);      
+        return null;
+      }
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      //setShowCredentialError(true);
+      return null;
+    }
+  };
+  const formatToDate = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "";
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  useEffect(() => {
+      getLastUpdated();
+    }, []);
 
   function closeDropdown() {
     setIsOpen(false);
@@ -20,10 +59,7 @@ export default function UserDropdown() {
       <button
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
-      >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          {/* Image */}
-        </span>
+      >        
 
         <span className="block mr-1 font-medium text-theme-sm">{user.userName}</span>
         <svg
@@ -58,7 +94,7 @@ export default function UserDropdown() {
             {user.email}
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-           Last Refreshed : 10/11/2025
+           Last Refreshed : {formatToDate(lastUpdated?.etlUpdateDate)}
           </span>
         </div>
 
