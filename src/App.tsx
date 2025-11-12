@@ -57,6 +57,7 @@ import ManuallyUpdating from "./pages/Pricing/ERPLoad/ManuallyUpdating";
 import LettingExpire from "./pages/Pricing/ERPLoad/LettingExpire";
 import RecentlyLoaded from "./pages/Pricing/ERPLoad/RecentlyLoaded";
 import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
+import NewCustomer from "./pages/Pricing/Accounts/NewCustomer";
 import TaskDetails from "./pages/Pricing/Accounts/TaskDetails";
 import PricingSite from "./pages/Pricing/Accounts/Site";
 import { Provider } from "react-redux";
@@ -90,6 +91,7 @@ export default function App() {
                 <Route index path="/groupsData" element={<GroupsData />} />
                 <Route index path="/priceListsData" element={<PriceListsData />} />
                 <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
+                <Route index path="/newCustomer" element={<NewCustomer />} />
                 <Route index path="/taskDetails" element={<TaskDetails />} />
                 <Route index path="/pricingTable" element={<PricingTable />} />
                 <Route index path="/addItem" element={<AddItem />} />

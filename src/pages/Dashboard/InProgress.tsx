@@ -21,6 +21,7 @@ export default function InProgress() {
   const taskCount = useSelector((state: any) => state.user.taskCount);
   const [totalRecords] = useState(taskCount.inProgress);
   const dispatch = useDispatch();
+  const [showChart, setShowChart] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
@@ -57,7 +58,7 @@ export default function InProgress() {
       filterType: "multiSelect",
       filterOptions: ["Actived", "Inactive", "Pending"],
     },
-    { header: "Created", accessor: "Created", filterType: "range",min: 20, max: 1057, },
+    { header: "Created", accessor: "Created", filterType: "range", min: 20, max: 1057, },
     {
       header: "Last Modified",
       accessor: "LastModified",
@@ -117,7 +118,7 @@ export default function InProgress() {
       return null;
     }
   };
- const navigate = useNavigate();
+  const navigate = useNavigate();
   const fetchCountries = async () => {
     try {
       const response = await axios.get(
@@ -154,13 +155,13 @@ export default function InProgress() {
   const selected = () => {
     //console.log("selectedRows",selectedRows);
     const selected = selectedRows.filter((row: any) => row.checked);
-    if(selected.length===0){
+    if (selected.length === 0) {
       alert("Please select at least one record");
       return;
-    }else{
-    console.log("selected", selected);
-    dispatch(resetRecords(selected));
-   navigate("/confirmSelectionAccount");
+    } else {
+      console.log("selected", selected);
+      dispatch(resetRecords(selected));
+      navigate("/confirmSelectionAccount");
     }
   };
 
@@ -179,9 +180,9 @@ export default function InProgress() {
     <>
       <Loader isLoad={loading} />
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <span className="font-medium" onClick={()=>{navigate('/home')}}>Inbox</span> /
-          <span className="text-gray-500 font-medium">&nbsp;Inprogress</span>
-        </nav>
+        <span className="font-medium" onClick={() => { navigate('/home') }}>Inbox</span> /
+        <span className="text-gray-500 font-medium">&nbsp;Inprogress</span>
+      </nav>
       <PageMeta
         title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
         description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
@@ -190,7 +191,27 @@ export default function InProgress() {
         <div className="col-span-6 space-y-6 xl:col-span-8">
           <EcommerceMetrics taskCount={taskCount} />
 
-          <MonthlySalesChart page={"In Progress"} />
+          <div className="bg-white shadow rounded-md border border-gray-200">
+            {/* Header/Toggle */}
+            <button
+              onClick={() => setShowChart(!showChart)}
+              className="w-full flex justify-between items-center px-4 py-2 text-left font-medium text-gray-800 hover:bg-gray-100 transition"
+            >
+              <span>Summary Mode</span>
+              <span className={`transition-transform ${showChart ? "rotate-90" : ""}`}>
+                ▶
+              </span>
+            </button>
+
+            {/* Collapsible content */}
+            <div
+              className={`transition-all duration-300 overflow-hidden ${showChart ? "max-h-[600px] py-4" : "max-h-0"
+                }`}
+            >
+              <MonthlySalesChart page={"In Progress"} />
+            </div>
+          </div>
+
           {/* <Bar/> */}
         </div>
 
@@ -207,8 +228,8 @@ export default function InProgress() {
             page={"In Progress"}
             inboxData={inboxData}
             columns={columns}
-            // checkBox={true}
-            // setSelectedRows={setSelectedRows}
+          // checkBox={true}
+          // setSelectedRows={setSelectedRows}
           />
         </div>
         <div className="col-span-12 mt-8">
