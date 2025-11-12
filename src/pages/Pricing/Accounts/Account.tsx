@@ -51,6 +51,12 @@ export default function Account() {
      navigate("/confirmSelectionAccount");
       }
     };
+    
+    const newCustomer = () => {
+      
+     navigate("/confirmSelectionAccount");
+      
+    };
 
     const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
@@ -124,10 +130,16 @@ export default function Account() {
         <div className="col-span-12 mt-8">
           <div className="flex justify-end p-0">
             <button
-              onClick={selected}
+              onClick={newCustomer}
               className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors"
             >
-              Create
+              Create New Customer
+            </button>
+            <button
+              onClick={selected}
+              className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-md transition-colors ml-10"
+            >
+              Create +
             </button>
           </div>
           <BasicTables page={'Pricing - Account'} inboxData={inboxData} columns={columns} checkBox={true}
