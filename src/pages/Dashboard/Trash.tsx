@@ -1,27 +1,27 @@
 import EcommerceMetrics from "../../components/ecommerce/EcommerceMetrics";
 import MonthlySalesChart from "../../components/ecommerce/MonthlySalesChart";
-// import StatisticsChart from "../../components/ecommerce/StatisticsChart";
-
 import Loader from "../../components/loader";
 import PageMeta from "../../components/common/PageMeta";
 import BasicTables from "../Tables/BasicTables";
-import { useEffect, useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import Pagination from "../../components/Pagination";
 import { useNavigate } from "react-router";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function Trash() {
   const user = useSelector((state: any) => state.user.users);
+  const taskCount = useSelector((state: any) => state.user.taskCount);
+  const navigate = useNavigate();
+
   const [inboxData, setInboxData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const taskCount = useSelector((state: any) => state.user.taskCount);
-   const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
-  const [totalRecords, setTotalRecords] = useState(1);
-  const [totalPages, setTotalPages] = useState(
-    Math.ceil(totalRecords / user.gridPageSize)
-  );
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [chartOpen, setChartOpen] = useState(false);
 
   const columns = [
     { header: "Task Name", accessor: "Name" },
@@ -37,10 +37,9 @@ export default function Trash() {
     { header: "Floor Breaks", accessor: "FloorBreaks" },
     { header: "Country", accessor: "CountryName" },
   ];
-  const fetchData = async (arg: any, start: number, end: number) => {
-    console.log(arg);
+
+  const fetchData = async (tab: string, start: number, end: number) => {
     setLoading(true);
-    //setActiveTab(arg);
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
@@ -48,118 +47,127 @@ export default function Trash() {
         lastRow: end,
         sortBy: "DeadlineOrdered",
         sortByDirection: "asc",
-        filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`,
+        filter: `AND (1 <> 1 OR tab = '${tab}') AND tab = '${tab}'`,
         fieldList: "*",
-        timeout: 0
+        timeout: 0,
       };
 
-      // 👈 second argument is the body (data)
       const response = await axios.post(
         `https://10.2.6.130:5000/api/Metadata/getData`,
         payload,
-        { headers: { "Content-Type": "application/json" } } // optional config
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("API Response:", response.data);
       setInboxData(response.data);
       setLoading(false);
-      return response.data;
     } catch (error: any) {
-      console.error("Error fetching data:", error.message);
-      return null;
+      console.error("Error fetching Trash data:", error.message);
+      setLoading(false);
     }
   };
-       const fetchCount = async (arg: any) => {
-    console.log(arg);
+
+  const fetchCount = async () => {
     setLoading(true);
-    //setActiveTab(arg);
     try {
       const payload = {
         viewName: `dbo.Inbox_Tasks(${user.userId})`,
-        filter: `AND (  1 <> 1  OR tab = '${arg}' )  AND tab = '${arg}'`
+        filter: `AND (1 <> 1 OR tab = 'Trash') AND tab = 'Trash'`,
       };
 
-      // 👈 second argument is the body (data)
       const response = await axios.post(
         `https://10.2.6.130:5000/api/Metadata/getViewCount`,
         payload,
-        { headers: { "Content-Type": "application/json" } } // optional config
+        { headers: { "Content-Type": "application/json" } }
       );
 
-      console.log("Trash", response.data);
-      setTotalRecords(response.data.count);
+      setTotalRecords(response.data.count || 0);
+      setTotalPages(Math.ceil(response.data.count / user.gridPageSize));
       setLoading(false);
-      return response.data;
     } catch (error: any) {
-      console.error("Error fetching data:", error.message);
-      return null;
+      console.error("Error fetching Trash count:", error.message);
+      setLoading(false);
     }
   };
-  const setPageChange = (pageNumber: any, listPerPage?: any) => {
+
+  const setPageChange = (pageNumber: number, listPerPage?: number) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
     setCurrentPage(pageNumber);
-    let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
-    let end =
-      pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
-    console.log(start, end);
-    fetchData("All", start, end);
+    const start = (pageNumber - 1) * noOfrecordsPerPage + 1;
+    const end = pageNumber * noOfrecordsPerPage;
+    fetchData("Trash", start, end);
   };
 
-  const changeRecordsPerPage = (recordsPerPage: any) => {
-    console.log("on count change", recordsPerPage);
+  const changeRecordsPerPage = (recordsPerPage: number) => {
     setRecordsPerPage(recordsPerPage);
     setTotalPages(Math.ceil(totalRecords / recordsPerPage));
     setPageChange(1, recordsPerPage);
   };
+
   useEffect(() => {
-    //setLoading(true);
-    fetchCount('Trash');
-    fetchData('Trash', 1, user.gridPageSize);
-    //setLoading(false);
+    fetchCount();
+    fetchData("Trash", 1, user.gridPageSize);
   }, []);
-  const navigate = useNavigate();
+
   useEffect(() => {
-      setTotalPages(Math.ceil(totalRecords / recordsPerPage))
-    }, [recordsPerPage,totalRecords]);
+    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
+  }, [recordsPerPage, totalRecords]);
+
   return (
     <>
-    <Loader isLoad={loading} />
-    <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <span className="font-medium" onClick={()=>{navigate('/home')}}>Inbox</span> /
-          <span className="text-gray-500 font-medium">&nbsp;Trash</span>
-        </nav>
+      <Loader isLoad={loading} />
+
+      {/* 🔹 Breadcrumb */}
+      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-3">
+        <span
+          className="font-medium cursor-pointer"
+          onClick={() => navigate("/home")}
+        >
+          Inbox
+        </span>{" "}
+        /{" "}
+        <span className="text-gray-500 font-medium cursor-pointer">Trash</span>
+      </nav>
+
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Pricing Tool - Trash"
+        description="Inbox Trash Dashboard"
       />
-      <div className="grid grid-cols-6 gap-4 md:gap-3">
-        <div className="col-span-6 space-y-6 xl:col-span-7">
-          <EcommerceMetrics taskCount={taskCount}/>
 
-          <MonthlySalesChart page={'Trash'}/>
-        </div>
+      <div className="space-y-3">
+        {/* ✅ Compact animated metrics */}
+        <EcommerceMetrics taskCount={taskCount} />
 
-        
-        
-        <div className="col-span-12 mt-8">
-          <BasicTables page={'Trash'} inboxData={inboxData} columns={columns}/>
-        </div>
- <div className="col-span-12 mt-8">
-          {inboxData.length > 0 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalRecords={totalRecords}
-              recordsPerPage={recordsPerPage}
-              onPageChange={setPageChange}
-              onRecordsPerPageChange={(val) => {
-                changeRecordsPerPage(val);
-                //setPageChange(1); // reset to first page on change
-              }}
-            />
+        {/* ✅ Collapsible Chart Section - Consistent across all pages */}
+        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <button
+            onClick={() => setChartOpen(!chartOpen)}
+            className="flex justify-between items-center w-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+          >
+            <span>📊 Summary</span>
+            {chartOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+
+          {chartOpen && (
+            <div className="p-3 border-t border-gray-100">
+              <MonthlySalesChart page={"Trash"} />
+            </div>
           )}
         </div>
-        
+
+        {/* ✅ Table */}
+        <BasicTables page={"Trash"} inboxData={inboxData} columns={columns} />
+
+        {/* ✅ Pagination */}
+        {inboxData.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalRecords={totalRecords}
+            recordsPerPage={recordsPerPage}
+            onPageChange={setPageChange}
+            onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
+          />
+        )}
       </div>
     </>
   );

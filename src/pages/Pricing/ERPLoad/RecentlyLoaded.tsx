@@ -133,12 +133,12 @@ export default function RecentlyLoaded() {
         <div className="col-span-6 space-y-6 xl:col-span-7">
           <ERPLOadData/>
         </div>
-        <div className="col-span-12 mt-8">
+        <div className="col-span-12">
           
           <BasicTables page={'Pricing - ERP Load - Recently Loaded'} inboxData={inboxData} columns={columns} 
             />
         </div>
-<div className="col-span-12 mt-8">
+<div className="col-span-12">
           {inboxData.length > 0 && (
             <Pagination
               currentPage={currentPage}

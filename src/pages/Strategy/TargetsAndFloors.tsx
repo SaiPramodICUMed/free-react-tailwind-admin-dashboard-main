@@ -156,12 +156,12 @@ export default function TargetsAndFloors() {
       </div>
       {/* Responsive Table inside the same container */}
       <div className="grid grid-cols-6 gap-4 md:gap-3">
-        <div className="col-span-12 mt-8">
+        <div className="col-span-12">
               <BasicTables page="Segmentation-Targets and Floors" inboxData={inboxData} columns={columns} />
             </div>  
             
      {/* Pagination */}
-      <div className="col-span-12 mt-8">
+      <div className="col-span-12">
         {inboxData.length > 0 && (
           <Pagination
             currentPage={currentPage}

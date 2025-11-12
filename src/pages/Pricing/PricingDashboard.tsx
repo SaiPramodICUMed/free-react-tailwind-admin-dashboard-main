@@ -1,217 +1,128 @@
 import PageMeta from "../../components/common/PageMeta";
-import {
-    ArrowUpIcon,
-    GroupIcon,
-} from "../../icons";
 import { Link } from "react-router-dom";
 import Calendar from "../Calendar";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Badge from "../../components/ui/badge/Badge";
 
 export default function PricingDashboard() {
-    const user = useSelector((state: any) => state.user.users);
-    const [totalRecords, setTotalRecords] = useState();
-    const [totalPriceListsRecords, setTotalPriceListsRecords] = useState();
-    const fetchGroupsCount = async () => {
-        //console.log(arg);
-        //setLoading(true);
-        //setActiveTab(arg);
-        try {
-            const payload = {
-                viewName: `vw_BuyingGroups`,
-                filter: `AND UserId = ${user.userId}`
-            };
+  const user = useSelector((state: any) => state.user.users);
+  const [totalGroups, setTotalGroups] = useState(0);
+  const [totalPriceLists, setTotalPriceLists] = useState(0);
 
-            // 👈 second argument is the body (data)
-            const response = await axios.post(
-                `https://10.2.6.130:5000/api/Metadata/getViewCount`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
-            );
+  // Animated counters
+  const [animated, setAnimated] = useState({
+    groups: 0,
+    priceLists: 0,
+  });
 
-            //console.log("All", response.data);
-            setTotalRecords(response.data.count);
-            //setLoading(false);
-            return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
-            return null;
-        }
+  // Animation helper
+  const animateValue = (key: string, start: number, end: number, duration: number) => {
+    let startTime: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const value = Math.floor(progress * (end - start) + start);
+      setAnimated((prev) => ({ ...prev, [key]: value }));
+      if (progress < 1) requestAnimationFrame(step);
     };
-    const fetchPriceListsCount = async () => {
-        //console.log(arg);
-        //setLoading(true);
-        //setActiveTab(arg);
-        try {
-            const payload = {
-                viewName: `vw_PriceLists`,
-                filter: `AND UserId = ${user.userId} AND (LastYearSales IS NOT NULL AND LastYearSales <> 0)`
-            };
+    requestAnimationFrame(step);
+  };
 
-            // 👈 second argument is the body (data)
-            const response = await axios.post(
-                `https://10.2.6.130:5000/api/Metadata/getViewCount`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
-            );
+  // Fetch Group count
+  const fetchGroupsCount = async () => {
+    try {
+      const payload = {
+        viewName: `vw_BuyingGroups`,
+        filter: `AND UserId = ${user.userId}`,
+      };
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setTotalGroups(response.data.count);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching groups:", error.message);
+      return null;
+    }
+  };
 
-            //console.log("All", response.data);
-            setTotalPriceListsRecords(response.data.count);
-            //setLoading(false);
-            return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
-            return null;
-        }
-    };
-    useEffect(() => {
-        fetchGroupsCount();
-        fetchPriceListsCount();
-    }, []);
+  // Fetch Price List count
+  const fetchPriceListsCount = async () => {
+    try {
+      const payload = {
+        viewName: `vw_PriceLists`,
+        filter: `AND UserId = ${user.userId} AND (LastYearSales IS NOT NULL AND LastYearSales <> 0)`,
+      };
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setTotalPriceLists(response.data.count);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching price lists:", error.message);
+      return null;
+    }
+  };
 
-    return (
-        <>
-            <PageMeta
-                title="Pricing Tool Application"
-                description="Pricing Tool Application"
-            />
-            <div className="grid grid-cols-6 gap-4 md:gap-3">
-                <div className="col-span-6 space-y-6 xl:col-span-7">
-                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:gap-4">
-                        {/* <!-- Metric Item 1 --> */}
-                        <Link
-                            to="../pricingAccount" // 👈 Navigate to your desired route
-                            className="block rounded-xl border border-gray-200 bg-white p-3 
-             dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
-             transition-all duration-200 text-gray-800 dark:text-gray-100"
-                        >
-                            <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
-                                {/* Icon Container */}
-                                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-                                    <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+  useEffect(() => {
+    fetchGroupsCount();
+    fetchPriceListsCount();
+  }, []);
 
-                                </div>
+  // Animate counts
+  useEffect(() => {
+    animateValue("groups", 0, totalGroups || 0, 1000);
+    animateValue("priceLists", 0, totalPriceLists || 0, 1000);
+  }, [totalGroups, totalPriceLists]);
 
-                                {/* Text and Badge Section */}
-                                <div className="flex items-end justify-between mt-3">
-                                    <div>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">Accounts</h4>
-                                    </div>
+  const tiles = [
+    { label: "Accounts", to: "../pricingAccount", value: null },
+    { label: "Groups", to: "../groupsData", value: animated.groups },
+    { label: "Price Lists", to: "../priceListsData", value: animated.priceLists },
+    { label: "ERP Load", to: "../completedTasks", value: null },
+  ];
 
-                                </div>
-                            </div>
-                        </Link>
+  return (
+    <>
+      <PageMeta title="Pricing Tool Dashboard" description="Pricing Tool Application Dashboard" />
 
-                        {/* <!-- Metric Item 2 --> */}
-                        <Link
-                            to="../groupsData" // 👈 Navigate to your desired route
-                            className="block rounded-xl border border-gray-200 bg-white p-3 
-             dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
-             transition-all duration-200 text-gray-800 dark:text-gray-100"
-                        >
-                            <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
-                                {/* Icon Container */}
-                                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-                                    <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
+      <div className="space-y-6">
+        {/* 🔹 Tiles Section */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {tiles.map((tile, i) => (
+            <Link
+              key={i}
+              to={tile.to}
+              className="flex flex-col items-center justify-center h-[120px] rounded-xl border border-gray-200 bg-white hover:shadow-md transition-all duration-200 hover:scale-[1.02]"
+            >
+              <div className="flex flex-col items-center justify-center text-center space-y-2">
+                {/* Label */}
+                <span className="text-sm font-semibold text-gray-800">{tile.label}</span>
 
-                                </div>
+                {/* Animated Count */}
+                {tile.value !== null && (
+                  <span className="text-green-500 font-extrabold text-lg leading-tight">
+                    {tile.value.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
 
-                                {/* Text and Badge Section */}
-                                <div className="flex items-end justify-between mt-3 min-w-0">
-                                    <div className="min-w-0">
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
-                                            Groups
-                                        </h4>
-                                    </div>
-
-                                    <Badge
-                                        color="success"
-                                        size="sm"
-                                        className="flex-shrink-0 text-xs px-1.5 py-0.5"
-                                    >
-                                        <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
-                                        <span className="truncate max-w-[50px] inline-block">{totalRecords}</span>
-                                    </Badge>
-                                </div>
-
-
-                            </div>
-                        </Link>
-
-                        {/* <!-- Metric Item 3 --> */}
-                        <Link
-                            to="../priceListsData" // 👈 Navigate to your desired route
-                            className="block rounded-xl border border-gray-200 bg-white p-3 
-             dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
-             transition-all duration-200 text-gray-800 dark:text-gray-100"
-                        >
-                            <div className="rounded-xl  bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
-                                {/* Icon Container */}
-                                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-                                    <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
-
-                                </div>
-
-                                {/* Text and Badge Section */}
-
-
-                                <div className="flex items-end justify-between mt-3 min-w-0">
-                                    <div className="min-w-0">
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90 truncate">
-                                            Price Lists
-                                        </h4>
-                                    </div>
-
-                                    <Badge
-                                        color="success"
-                                        size="sm"
-                                        className="flex-shrink-0 text-xs px-1.5 py-0.5"
-                                    >
-                                        <ArrowUpIcon className="size-3 mr-1 flex-shrink-0" />
-                                        <span className="truncate max-w-[50px] inline-block">{totalPriceListsRecords}</span>
-                                    </Badge>
-                                </div>
-
-                            </div>
-                        </Link>
-
-                        {/* <!-- Metric Item 4 --> */}
-                        <Link
-                            to="../completedTasks" // 👈 Navigate to your desired route
-                            className="block rounded-xl border border-gray-200 bg-white p-3 
-             dark:border-gray-800 dark:bg-gray-900 hover:shadow-md hover:scale-[1.02]
-             transition-all duration-200 text-gray-800 dark:text-gray-100"
-                        >
-                            <div className="rounded-xl bg-white p-3 dark:border-gray-800 dark:bg-white/[0.03] md:p-4">
-                                {/* Icon Container */}
-                                <div className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-lg dark:bg-gray-800">
-                                    <GroupIcon className="text-gray-800 size-5 dark:text-white/90" />
-
-                                </div>
-
-                                {/* Text and Badge Section */}
-                                <div className="flex items-end justify-between mt-3">
-                                    <div>
-                                        <h4 className="mt-1 font-semibold text-gray-800 text-sm dark:text-white/90">ERP Load</h4>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </Link>
-
-                        {/* <!-- Metric Item 5 --> */}
-
-                    </div>
-                </div>
-                <div className="col-span-12 mt-8">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                        Renewals Calendar
-                    </h3>
-                    <Calendar />
-                </div>
-            </div>
-        </>
-    );
+        {/* 🔹 Calendar Section */}
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-800 mb-3">Renewals Calendar</h3>
+          <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6">
+            <Calendar />
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
