@@ -19,20 +19,21 @@ const Translation: React.FC = () => {
   const countries: [] = useSelector((state: any) => state.user.countries);
   const navigate = useNavigate();
   const columns = [
-    { header: "Resource Key", accessor: "ResourceKey" },
-    { header: "Resource Type", accessor: "ResourceType" },
-    { header: "Resource Value", accessor: "ResourceValue" },
-    { header: "Language", accessor: "Language" },
+    { header: "Resource Key", accessor: "resourceKey" },
+    { header: "Resource Type", accessor: "resourceType" },
+    { header: "Resource Value", accessor: "resourceValue" },
+    { header: "Language", accessor: "language" },
   ];
 
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
+    console.log('listPerPage',listPerPage);
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage
     setCurrentPage(pageNumber);
     let start = pageNumber == 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
     let end =
       pageNumber == 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
     console.log(start, end);
-    fetchData(start, end, user.activeCountryId);
+    fetchData(listPerPage);
   };
 
   const changeRecordsPerPage = (recordsPerPage: any) => {
@@ -41,34 +42,26 @@ const Translation: React.FC = () => {
     setTotalPages(Math.ceil(totalRecords / recordsPerPage))
     setPageChange(1, recordsPerPage);
   };
+
   const handleChange = (event: any) => {
     setSelectedValue(event.target.value);
   };
-  const fetchData = async (start: number, end: number, country: number) => {
+  const fetchData = async (recordsPerPage:any) => {
     //console.log(arg);
     //setActiveTab(arg);
     setLoading(true);
     try {
-      const payload = {
-        viewName: `vw_Transalation`,
-        firstRow: start,
-        lastRow: end,
-        sortBy: "ResourceKey",
-        sortByDirection: "asc",
-        filter: `AND CountryId = ${country}`,
-        fieldList: "*",
-        timeout: 0,
-      };
-
+      
       // 👈 second argument is the body (data)
-      const response = await axios.post(
-        `https://10.2.6.130:5000/api/Metadata/getData`,
-        payload,
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Users/GetTranslationsPaged?pageNumber=${currentPage}&pageSize=${recordsPerPage}`,
+        
         { headers: { "Content-Type": "application/json" } } // optional config
       );
 
-      console.log("API Response:", response.data);
-      setInboxData(response.data);
+      console.log("API Response:", response.data.data);
+      setInboxData(response.data.data);
+      setTotalRecords(response.data.totalRecords)
       setLoading(false);
       return response.data;
     } catch (error: any) {
@@ -76,45 +69,18 @@ const Translation: React.FC = () => {
       return null;
     }
   };
-
-  const fetchCount = async (country: number) => {
-    //console.log(arg);
-    setLoading(true);
-    //setActiveTab(arg);
-    try {
-      const payload = {
-        viewName: `dbo.f_vw_Templates(${country})`,
-        filter: ``
-      };
-
-      // 👈 second argument is the body (data)
-      const response = await axios.post(
-        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
-        payload,
-        { headers: { "Content-Type": "application/json" } } // optional config
-      );
-
-      console.log("Promo Count", response.data);
-      setTotalRecords(response.data.count);
-      setLoading(false);
-      return response.data;
-    } catch (error: any) {
-      console.error("Error fetching data:", error.message);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    fetchCount(user.activeCountryId);
-    fetchData(1, user.gridPageSize, user.activeCountryId);
+  useEffect(() => {    
+    fetchData(recordsPerPage);
   }, []);
+
   useEffect(() => {
+    console.log('totalRecords',totalRecords);
+    console.log('recordsPerPage',recordsPerPage);
     setTotalPages(Math.ceil(totalRecords / recordsPerPage))
   }, [recordsPerPage, totalRecords]);
-  useEffect(() => {
-    fetchCount(selectedValue);
-    fetchData(1, user.gridPageSize, selectedValue);
-  }, [selectedValue]);
+
+  
+
   return (
     <div className="bg-white p-6">
       <Loader isLoad={loading} />
@@ -127,19 +93,10 @@ const Translation: React.FC = () => {
           {/* <FaChevronRight className="text-gray-400 text-xs" /> */}
           {/* <span className="font-medium hover:text-blue-700 cursor-pointer">Inbox</span> */}
           /{/* <FaChevronRight className="text-gray-400 text-xs" /> */}
-          <span className="text-gray-500 font-medium">&nbsp;Templates</span>
+          <span className="text-gray-500 font-medium">&nbsp;Translations</span>
         </nav>
 
-        <div className=" top-0 right-0">
-          <select id="fruit-select" value={selectedValue} onChange={handleChange}
-            className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none">
-            {countries.map((option: any) => (
-              <option key={option.countryId} value={option.countryId}>
-                {option.countryName}
-              </option>
-            ))}
-          </select>
-        </div>
+        
 
         {/* <h2 className="text-xl font-semibold text-blue-700">User Details</h2> */}
 
