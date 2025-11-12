@@ -57,6 +57,9 @@ export default function UserDropdown() {
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {user.email}
           </span>
+          <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+           Last Refreshed : 10/11/2025
+          </span>
         </div>
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
