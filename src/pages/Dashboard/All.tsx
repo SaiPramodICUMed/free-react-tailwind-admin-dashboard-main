@@ -128,8 +128,10 @@ export default function All() {
         <span className="text-gray-500 font-medium cursor-pointer">All</span>
       </nav>
 
-      <PageMeta title="Pricing Tool - All" description="Inbox All Dashboard" />
-
+      <PageMeta
+        title="Pricing Tool"
+        description=""
+      />
       <div className="space-y-3">
         {/* ✅ Compact animated metrics */}
         <EcommerceMetrics taskCount={taskCount} />

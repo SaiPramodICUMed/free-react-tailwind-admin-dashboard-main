@@ -106,8 +106,8 @@ export default function Drafts() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - Drafts"
-        description="Inbox Drafts Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">

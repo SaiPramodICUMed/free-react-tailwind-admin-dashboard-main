@@ -183,8 +183,8 @@ export default function Site() {
           <span className="text-gray-500 font-medium">&nbsp;Accounts - Site</span>
         </nav>
       <PageMeta
-        title="React.js Ecommerce Dashboard | TailAdmin - React.js Admin Dashboard Template"
-        description="This is React.js Ecommerce Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Pricing Tool"
+        description=""
       />
       {/* 🔹 Tiles and buttons in one compact responsive row */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">

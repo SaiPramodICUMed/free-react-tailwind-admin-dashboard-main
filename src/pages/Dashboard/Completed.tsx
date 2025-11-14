@@ -131,8 +131,8 @@ export default function Completed() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - Completed"
-        description="Inbox Completed Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">

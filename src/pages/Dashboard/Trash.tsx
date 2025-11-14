@@ -129,8 +129,8 @@ export default function Trash() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - Trash"
-        description="Inbox Trash Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">

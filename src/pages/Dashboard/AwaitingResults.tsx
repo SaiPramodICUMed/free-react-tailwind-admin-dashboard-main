@@ -108,8 +108,8 @@ export default function AwaitingResults() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - Awaiting Results"
-        description="Inbox Awaiting Results Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">

@@ -184,7 +184,10 @@ export default function Account() {
         <span className="text-gray-500 font-medium">&nbsp;Accounts - Account</span>
       </nav>
 
-      <PageMeta title="Pricing Tool - Account" description="Accounts Management" />
+      <PageMeta
+        title="Pricing Tool"
+        description=""
+      />
 
       {/* 🔹 Tiles and buttons in one compact responsive row */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">

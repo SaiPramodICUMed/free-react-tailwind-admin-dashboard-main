@@ -131,8 +131,8 @@ export default function Cancelled() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - Cancelled"
-        description="Inbox Cancelled Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">

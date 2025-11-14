@@ -132,7 +132,10 @@ const Calendar: React.FC = () => {
 
   return (
     <>
-      <PageMeta title="Calendar Tabs | Expiry Tracker" description="Calendar with Expiry Categories" />
+      <PageMeta
+        title="Pricing Tool"
+        description=""
+      />
       <div className="rounded-2xl border border-gray-200 bg-white shadow-sm p-4">
         {/* Tabs Header */}
         <div className="flex border-b border-gray-300 mb-4 space-x-2 overflow-x-auto">

@@ -89,8 +89,10 @@ export default function PricingDashboard() {
 
   return (
     <>
-      <PageMeta title="Pricing Tool Dashboard" description="Pricing Tool Application Dashboard" />
-
+      <PageMeta
+        title="Pricing Tool"
+        description=""
+      />
       <div className="space-y-6">
         {/* 🔹 Tiles Section */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

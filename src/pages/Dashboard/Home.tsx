@@ -138,8 +138,10 @@ export default function Home() {
         </span>
       </nav>
 
-      <PageMeta title="Pricing Tool - Inbox" description="Inbox Dashboard" />
-
+      <PageMeta
+        title="Pricing Tool"
+        description=""
+      />
       <div className="space-y-3">
         {/* 🔹 Compact animated metrics */}
         <EcommerceMetrics taskCount={animatedTaskCount} />

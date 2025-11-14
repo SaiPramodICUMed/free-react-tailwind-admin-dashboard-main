@@ -51,7 +51,7 @@ export default function ResetPasswordForm() {
     >
       <div className="mb-6 sm:mb-8 text-center">
         <h3 className="mt-3 text-xl font-semibold">
-          Reset Password
+          Change Password
         </h3>
 
       </div>

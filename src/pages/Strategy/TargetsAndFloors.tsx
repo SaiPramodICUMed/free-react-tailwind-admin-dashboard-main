@@ -136,8 +136,8 @@ export default function TargetsAndFloors() {
   <div className="bg-white p-6">
       <Loader isLoad={loading} />
       <PageMeta
-        title="React.js Blank Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js Blank Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
+        title="Pricing Tool"
+        description=""
       />
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
         <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">

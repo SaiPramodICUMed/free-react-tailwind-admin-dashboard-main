@@ -134,8 +134,8 @@ export default function InProgress() {
       </nav>
 
       <PageMeta
-        title="Pricing Tool - In Progress"
-        description="Inbox In Progress Dashboard"
+        title="Pricing Tool"
+        description=""
       />
 
       <div className="space-y-3">
