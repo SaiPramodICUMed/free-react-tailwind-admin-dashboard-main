@@ -206,10 +206,10 @@ const Users: React.FC = () => {
 
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
           <span className="font-medium">
-            Approval Roles : {columnRolesCount} roles  <button className="text-sky-600 underline" onClick={()=>navigate('/editApprovalRoles')}>Edit</button>
+            Approval Roles : {approvalRolesCount} roles  <button className="text-sky-600 underline" onClick={()=>navigate('/editApprovalRoles')}>Edit</button>
           </span>
            <span className="font-medium">
-            Restriction Profiles:  {approvalRolesCount} profiles <button className="text-sky-600 underline" onClick={()=>navigate('/editColumnPermissions')}>Edit</button>
+            Restriction Profiles:  {columnRolesCount} profiles <button className="text-sky-600 underline" onClick={()=>navigate('/editColumnPermissions')}>Edit</button>
           </span>
         
       </div>
