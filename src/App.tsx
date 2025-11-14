@@ -65,6 +65,8 @@ import { store, persistor } from "./store/store";
 import { PersistGate } from "redux-persist/integration/react";
 import PricingTable from "./pages/Pricing/PricingTable";
 import AddItem from "./pages/Pricing/AddItem";
+import ResetPassword from "./pages/AuthPages/ResetPassword";
+import UserSettings from "./pages/Settings/Settings";
 
 export default function App() {
   return (
@@ -121,6 +123,8 @@ export default function App() {
                 <Route index path="/templates" element={<Templates />} />
                 <Route index path="/editApprovalRoles" element={<EditApprovalRoles />} />
                 <Route index path="/editColumnPermissions" element={<EditColumnPermissions />} />
+                 <Route index path="/resetPassword" element={<ResetPassword />} />
+                 <Route index path="/UserSettings" element={<UserSettings />} />
 
                 {/* Others Page */}
                 <Route path="/profile" element={<UserProfiles />} />
@@ -149,6 +153,7 @@ export default function App() {
               {/* Auth Layout */}
               <Route path="/" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
+             
 
               {/* Fallback Route */}
               <Route path="*" element={<NotFound />} />
