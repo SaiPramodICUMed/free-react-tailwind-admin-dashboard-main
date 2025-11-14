@@ -120,9 +120,9 @@ export default function PricingDashboard() {
         {/* 🔹 Calendar Section */}
         <div className="mt-8">
           <h3 className="text-lg font-semibold text-gray-800 mb-3">Renewals Calendar</h3>
-          <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6">
+          {/* <div className="rounded-xl bg-white shadow-sm border border-gray-200 p-6"> */}
             <Calendar />
-          </div>
+          {/* </div> */}
         </div>
       </div>
     </>

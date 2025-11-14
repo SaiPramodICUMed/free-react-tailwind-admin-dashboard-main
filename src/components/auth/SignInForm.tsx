@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { Link } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
@@ -65,6 +65,10 @@ const getUserDetails = async () => {
     return null;
   }
 };
+
+useEffect(() => {
+    dispatch(addUser({}));
+  }, []);
 
   return (
     <div className="flex flex-col flex-1">
@@ -154,3 +158,7 @@ const getUserDetails = async () => {
     </div>
   );
 }
+function useEffect(arg0: () => void, arg1: never[]) {
+  throw new Error("Function not implemented.");
+}
+
