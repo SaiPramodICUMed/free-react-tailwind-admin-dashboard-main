@@ -1,17 +1,24 @@
-import { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 export default function UserSettings() {
   const [activeTab, setActiveTab] = useState("general");
+  const user = useSelector((state: any) => state.user.users);
+
+
+
+  
 
   return (
     <div className="w-full px-8 py-10 bg-white">
       {/* Page Heading */}
-      <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4">
+      <h2 className="text-center text-xl font-semibold text-gray-800">
         User Settings
       </h2>
 
-      <p className="text-right font-medium mb-8 text-gray-700">
-        Sai Pramod - Netherlands - Super User
+      <p className="text-right font-medium text-gray-700 text-sm">
+        <span className="font-semibold"> {user.userName} </span> - {user.userRole}
       </p>
 
       {/* Outer Box */}
@@ -32,11 +39,10 @@ export default function UserSettings() {
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-6 py-3 text-sm font-medium border-r border-white 
-              ${
-                activeTab === tab.key
+              ${activeTab === tab.key
                   ? "bg-blue-800  text-white"
                   : "bg-white text-blue-800 hover:bg-blue-800 hover:text-white"
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -56,61 +62,158 @@ export default function UserSettings() {
 
 /* ------------------------- GENERAL TAB ------------------------- */
 function GeneralTab() {
-  const [language, setLanguage] = useState("English (UK)");
-  const [currency, setCurrency] = useState("EUR");
-  const [format, setFormat] = useState("123.456.789,00");
-  const [timezone, setTimezone] = useState("(UTC+01:00) Amsterdam, Berlin, Rome");
+  const [selectedCultureId, setSelectedCultureId] = useState<number | null>(null);
+  const [language, setLanguage] = useState([]);
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<number | null>(null);
+  const [currency, setCurrency] = useState([]);
+  const [numberFormat, setNumberFormat] = useState([]);
+  const [timezone, setTimezone] = useState([]);
+  const fetchLanguages = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Users/getLanguages`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
 
+      console.log("Languages API Response:", response.data);
+      setLanguage(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchCurrencies = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Pricing/getCurrencies`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Currencies API Response:", response.data);
+      setCurrency(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchTimeZones = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Users/GetTimeZones`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Time zones API Response:", response.data);
+      setTimezone(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchNumberFormatting = async () => {
+    try {
+
+      const payload = {
+        viewName: `lkpNumberFormats`,
+        sortBy: "",
+        sortByDirection: "",
+        filter: ``,
+        fieldList: "*",
+        timeout: 0,
+      };
+
+      const response = await axios.post(
+        `https://vm-www-dprice01.icumed.com:5000/api/Metadata/getDataNoPaging`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("NumberFormatting API Response:", response.data);
+      setNumberFormat(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchLanguages();
+    fetchCurrencies();
+    fetchNumberFormatting();
+    fetchTimeZones();
+  }, []);
+
+  const [selectedNumberFormat, setSelectedNumberFormat] = useState<number | null>(null);
+  const [selectedTimeZone, setSelectedTimeZone] = useState<number | null>(null);
   return (
     <div className="space-y-6">
       <SettingRow label="Language:">
-        <select
-          className="border rounded px-3 py-1"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
+        <select id="languages"
+          value={selectedCultureId ?? ""}
+          onChange={(e) => setSelectedCultureId(Number(e.target.value))}
+          className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
         >
-          <option>English (UK)</option>
-          <option>English (US)</option>
-          <option>Dutch</option>
+          {language.map((option: any) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
         </select>
       </SettingRow>
 
       <SettingRow label="Currency:">
-        <select
-          className="border rounded px-3 py-1"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-        >
-          <option>EUR</option>
-          <option>USD</option>
-          <option>INR</option>
-        </select>
+        <select id="currencies"
+              value={selectedCurrencyCode ?? ""}
+              onChange={(e) => setSelectedCurrencyCode(Number(e.target.value))}
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {currency.map((option: any) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
       </SettingRow>
 
       <SettingRow label="Format:">
         <select
-          className="border rounded px-3 py-1"
-          value={format}
-          onChange={(e) => setFormat(e.target.value)}
-        >
-          <option>123.456.789,00</option>
-          <option>123,456,789.00</option>
-        </select>
+              id="numberformat"
+              value={selectedNumberFormat ?? ""}
+              onChange={(e) => setSelectedNumberFormat(Number(e.target.value))}
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {numberFormat.map((option: any) => (
+                <option key={option.FormatId} value={option.FormatId}>
+                  {option.Formatting}
+                </option>
+              ))}
+            </select>
       </SettingRow>
 
       <SettingRow label="TimeZone:">
-        <select
-          className="border rounded px-3 py-1 w-[350px]"
-          value={timezone}
-          onChange={(e) => setTimezone(e.target.value)}
-        >
-          <option>(UTC+01:00) Amsterdam, Berlin, Rome</option>
-          <option>(UTC+05:30) India Standard Time</option>
-        </select>
+         <select
+              id="timezone"
+              value={selectedTimeZone ?? ""}
+              onChange={(e) => setSelectedTimeZone(e.target.value)}   // <--- STRING
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {timezone.map((option: any) => (
+                <option key={option.id} value={option.standardName}>
+                  {option.displayName}
+                </option>
+              ))}
+            </select>
       </SettingRow>
 
-      <div className="text-center mt-10">
-        <button className="bg-blue-800 text-white px-5 py-2 rounded">Save</button>
+      <div className="text-center">
+        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
       </div>
     </div>
   );
@@ -202,8 +305,8 @@ function EmailTab() {
         </div>
       </EmailRow>
 
-      <div className="text-center mt-10">
-        <button className="bg-blue-800 text-white px-5 py-2 rounded">Save</button>
+      <div className="text-center">
+        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
       </div>
     </div>
   );
@@ -219,7 +322,7 @@ function OutOfOfficeTab() {
     <div className="space-y-6">
       <SettingRow label="Cover User:">
         <select
-          className="border rounded px-3 py-1"
+          className="border rounded px-3 py-1 text-sm"
           value={coverUser}
           onChange={(e) => setCoverUser(e.target.value)}
         >
@@ -231,7 +334,7 @@ function OutOfOfficeTab() {
 
       <SettingRow label="Cover Message:">
         <textarea
-          className="border rounded px-3 py-2 w-[350px] h-28"
+          className="border rounded px-3 py-2 w-[350px] h-28 text-sm"
           value={coverMessage}
           onChange={(e) => setCoverMessage(e.target.value)}
         />
@@ -240,7 +343,7 @@ function OutOfOfficeTab() {
       <SettingRow label="Cover Setting:">
         <div className="flex gap-6">
           {["off", "on", "auto"].map((option) => (
-            <label key={option} className="flex items-center gap-2">
+            <label key={option} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 checked={coverSetting === option}
@@ -253,18 +356,28 @@ function OutOfOfficeTab() {
       </SettingRow>
 
       <div className="text-center mt-10">
-        <button className="bg-blue-800 text-white px-5 py-2 rounded">Save</button>
+        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
       </div>
     </div>
   );
 }
 
 /* ------------------------- REUSABLE ROW ------------------------- */
-function SettingRow({ label, children }: any) {
+function SettingRow({ label, description, children }: any) {
   return (
-    <div className="grid grid-cols-3 items-center gap-4">
-      <p className="font-semibold text-gray-700">{label}</p>
-      <div className="col-span-2">{children}</div>
+    <div className="grid grid-cols-12 items-start gap-4">
+      {/* Label */}
+      <div className="col-span-3">
+        <p className="font-semibold text-gray-700 text-sm">{label}</p>
+      </div>
+
+      {/* Description (italic, muted) */}
+      <div className="col-span-7">
+        <p className="text-gray-600 italic text-sm">{description}</p>
+      </div>
+
+      {/* Control (right-aligned) */}
+      <div className="col-span-2 flex justify-end items-center text-sm">{children}</div>
     </div>
   );
 }
@@ -280,19 +393,19 @@ function EmailRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-12 items-start gap-4 py-3">
+    <div className="grid grid-cols-12 items-start gap-4">
       {/* Label */}
       <div className="col-span-3">
-        <p className="font-semibold text-gray-700">{label}</p>
+        <p className="font-semibold text-gray-700 text-sm">{label}</p>
       </div>
 
       {/* Description (italic, muted) */}
       <div className="col-span-7">
-        <p className="text-gray-600 italic">{description}</p>
+        <p className="text-gray-600 italic text-sm">{description}</p>
       </div>
 
       {/* Control (right-aligned) */}
-      <div className="col-span-2 flex justify-end items-center">{children}</div>
+      <div className="col-span-2 flex justify-end items-center text-sm">{children}</div>
     </div>
   );
 }
