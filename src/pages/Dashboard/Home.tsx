@@ -78,7 +78,7 @@ export default function Home() {
         { headers: { "Content-Type": "application/json" } }
       );
       dispatch(addTaskCount(response.data));
-      setTotalRecords(response.data.inProgress || 0);
+      setTotalRecords(response.data.inbox || 0);
       setAnimatedTaskCount(response.data);
     } catch (error: any) {
       console.error("Error fetching task count:", error.message);

@@ -325,8 +325,8 @@ const ConfirmSelection: React.FC<Props> = ({
 
                     {/* Task Name */}
                     <div className={`flex ${isMobile ? "flex-col items-start gap-1" : "items-center"} mb-2`}>
-                        <label className={`font-semibold ${isMobile ? "w-auto" : "w-[150px]"}`}>
-                            Task Name
+                        <label className={` ${isMobile ? "w-auto" : "w-[150px]"}`}>
+                            Task Name:
                         </label>
                         <input
                             readOnly
@@ -341,7 +341,7 @@ const ConfirmSelection: React.FC<Props> = ({
 
                     <div className={`grid gap-2 ${isMobile ? "grid-cols-1" : "grid-cols-2"} mb-2`}>
                         <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Data Period</label>
+                            <label className="mb-1 text-slate-800">Data Period:</label>
 
                             <select
                                 value={localDataPeriod}
@@ -368,7 +368,7 @@ const ConfirmSelection: React.FC<Props> = ({
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Task Type</label>
+                            <label className="mb-1  text-slate-800">Task Type:</label>
                             <select
                                 value={selectedTaskTypeId ?? ""}
                                 onChange={(e) => setSelectedTaskTypeId(Number(e.target.value))}
@@ -383,7 +383,7 @@ const ConfirmSelection: React.FC<Props> = ({
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Customer Segment</label>
+                            <label className="mb-1  text-slate-800">Customer Segment:</label>
                             <select
                                 value={customerSegment}
                                 disabled
@@ -394,7 +394,7 @@ const ConfirmSelection: React.FC<Props> = ({
                         </div>
 
                         <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Currency</label>
+                            <label className="mb-1 text-slate-800">Currency:</label>
                             <select
                                 value={selectedCurrency}
                                 onChange={(e) => {
@@ -417,7 +417,7 @@ const ConfirmSelection: React.FC<Props> = ({
                         <div className={`${isMobile ? "hidden" : "block"}`} />
 
                         <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Price List Type</label>
+                            <label className="mb-1 text-slate-800">Price List Type:</label>
                             <select
                                 value={selectedPriceListType === "" ? "" : selectedPriceListType}
                                 onChange={(e) => {

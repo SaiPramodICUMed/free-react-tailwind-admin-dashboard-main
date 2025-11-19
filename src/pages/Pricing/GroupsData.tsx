@@ -1,10 +1,11 @@
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import Loader from "../../components/loader";
 import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
 import { useNavigate } from "react-router";
+import { resetRecords, userApprovalRecord } from "../../store/userSlice";
 
 export default function GroupsData() {
   const user = useSelector((state: any) => state.user.users);
@@ -16,6 +17,14 @@ export default function GroupsData() {
   const [totalPages, setTotalPages] = useState(1);
   const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userApprovals, setUserApprovals] = useState([]);
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(resetRecords([]));   // Clear Redux
+    setSelectedRows([]);          // Clear component state
+  }, []);
 
   // 🔥 Popup State
   const [showPopup, setShowPopup] = useState(false);
@@ -62,10 +71,32 @@ export default function GroupsData() {
     }
   };
 
-  const handleViewDetails = (row:any) => {
-  console.log("Parent received:", row);
-  getAccountDetails(row);
-};
+  const fetchUserApprovalRoles = async () => {
+    try {
+      const payload = {
+        userId: user.userId,
+        countryId: user.activeCountryId,
+        taskId: null
+      };
+
+      const response = await axios.post(
+        `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetUserApprovalRoles`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      setUserApprovals(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching User Approval Roles:", error.message);
+      return null;
+    }
+  };
+
+  const handleViewDetails = (row: any) => {
+    console.log("Parent received:", row);
+    getAccountDetails(row);
+  };
 
   const fetchCount = async () => {
     setLoading(true);
@@ -91,6 +122,28 @@ export default function GroupsData() {
     }
   };
 
+  const selected = () => {
+    const selected = selectedRows.filter((row: any) => row.checked);
+    console.log('userApprovals', userApprovals);
+    if (userApprovals.length === 0 || userApprovals == null) {
+      alert("You don't have approval rights to create task!");
+      return;
+    }
+
+    dispatch(userApprovalRecord(userApprovals));
+
+    if (selected.length === 0) {
+      alert("Please select at least one record");
+      return;
+    }
+    console.log('selected row',selected);
+    dispatch(resetRecords(selected));
+
+    
+      navigate("/groupConfirmSelection");
+    
+  };
+
   const setPageChange = (pageNumber: number, perPage?: number) => {
     const size = perPage ? perPage : recordsPerPage;
     setCurrentPage(pageNumber);
@@ -114,6 +167,7 @@ export default function GroupsData() {
   useEffect(() => {
     fetchCount();
     fetchData(1, user.gridPageSize);
+    fetchUserApprovalRoles();
   }, []);
 
   useEffect(() => {
@@ -127,7 +181,7 @@ export default function GroupsData() {
   // --------------------------------------
   // 🔥 Get Account Details Handler
   // --------------------------------------
-  const getAccountDetails = async (arg:any) => {
+  const getAccountDetails = async (arg: any) => {
     //const selected = selectedRows.filter((r: any) => r.checked);
 
     // if (selected.length === 0) {
@@ -170,7 +224,7 @@ export default function GroupsData() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
           <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={getAccountDetails}
+              onClick={selected}
               disabled={!isAnyRowSelected}
               className={`px-4 py-1.5 rounded text-white 
                 ${isAnyRowSelected ? "bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`}
@@ -187,7 +241,7 @@ export default function GroupsData() {
             columns={columns}
             checkBox={true}
             setSelectedRows={setSelectedRows}
-             handleViewDetails={handleViewDetails} viewDetails={true}
+            handleViewDetails={handleViewDetails} viewDetails={true}
           />
         </div>
 
@@ -209,14 +263,18 @@ export default function GroupsData() {
           🔥 POPUP MODAL — Group Account Details
       ----------------------------------------- */}
       {showPopup && (
-  <div className="fixed inset-0 bg-gray-900/30 backdrop-blur-sm flex justify-center items-center z-50">
-    <div className="bg-white rounded-md shadow-lg w-[700px] max-h-[80vh] overflow-hidden">
+  <div className="fixed inset-0 bg-black/40 flex justify-center items-center !z-[999999]">
+
+    <div className="bg-white rounded-xl shadow-2xl w-[750px] max-h-[80vh] overflow-hidden
+                    animate-[zoomIn_0.2s_ease]">
 
       {/* HEADER */}
-      <div className="flex justify-between items-center px-4 py-3 border-b bg-slate-100">
-        <h2 className="font-semibold text-lg">Group Accounts</h2>
+      <div className="flex justify-between items-center px-5 py-4 
+                      bg-gradient-to-r from-slate-100 to-slate-200 border-b">
+        <h2 className="font-semibold text-lg text-gray-800">Group Accounts</h2>
+
         <button
-          className="text-gray-600 hover:text-red-500 text-xl"
+          className="text-gray-500 hover:text-gray-800 transition"
           onClick={() => setShowPopup(false)}
         >
           ✕
@@ -226,7 +284,7 @@ export default function GroupsData() {
       {/* TABLE */}
       <div className="overflow-y-auto max-h-[65vh]">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-200 text-gray-700 sticky top-0">
+          <thead className="bg-gray-100 text-gray-700 sticky top-0 shadow">
             <tr>
               <th className="px-4 py-2 border">Accounts</th>
               <th className="px-4 py-2 border">1 Yr Sales (in Group)</th>
@@ -235,10 +293,13 @@ export default function GroupsData() {
 
           <tbody>
             {groupAccounts.map((acc: any, idx: number) => (
-              <tr key={idx} className={idx % 2 === 0 ? "bg-gray-100" : "bg-white"}>
-                <td className="px-4 py-2 border">
-                  {acc.accountName}
-                </td>
+              <tr
+                key={idx}
+                className={`${
+                  idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                } hover:bg-blue-50/60 transition`}
+              >
+                <td className="px-4 py-2 border">{acc.accountName}</td>
                 <td className="px-4 py-2 border">
                   {acc.yrSales ? `$ ${acc.yrSales.toLocaleString()}` : "$ 0"}
                 </td>
@@ -251,6 +312,7 @@ export default function GroupsData() {
     </div>
   </div>
 )}
+
 
     </>
   );

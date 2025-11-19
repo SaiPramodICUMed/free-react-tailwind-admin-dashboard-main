@@ -9,12 +9,16 @@ export default function PricingDashboard() {
   const user = useSelector((state: any) => state.user.users);
   const [totalGroups, setTotalGroups] = useState(0);
   const [totalPriceLists, setTotalPriceLists] = useState(0);
+  const [accountCount, setAccountCount] = useState(0);
+  const [siteCount, setSiteCount] = useState(0);
 
   // Animated counters
   const [animated, setAnimated] = useState({
-    groups: 0,
-    priceLists: 0,
-  });
+  groups: 0,
+  priceLists: 0,
+  accounts: 0   // 👈 NEW animated value for accounts + sites
+});
+
 
   // Animation helper
   const animateValue = (key: string, start: number, end: number, duration: number) => {
@@ -69,20 +73,72 @@ export default function PricingDashboard() {
     }
   };
 
+   const fetchAccountsCount = async () => {
+    try {
+      const payload = {
+        viewName: `vw_Accounts`,
+        filter: `AND UserId = ${user.userId}`,
+      };
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setAccountCount(response.data.count);
+      return response.data.count;
+    } catch {
+      return 0;
+    }
+  };
+
+  const fetchSitesCount = async () => {
+    try {
+      const payload = {
+        viewName: `vw_Sites`,
+        filter: `AND UserId = ${user.userId}`,
+      };
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      setSiteCount(response.data.count);
+      return response.data.count;
+    } catch {
+      return 0;
+    }
+  };
+
   useEffect(() => {
     fetchGroupsCount();
     fetchPriceListsCount();
   }, []);
 
   // Animate counts
-  useEffect(() => {
-    animateValue("groups", 0, totalGroups || 0, 1000);
-    animateValue("priceLists", 0, totalPriceLists || 0, 1000);
-  }, [totalGroups, totalPriceLists]);
+ useEffect(() => {
+  const loadData = async () => {
+    const [accounts, sites] = await Promise.all([
+      fetchAccountsCount(),
+      fetchSitesCount(),
+    ]);
+
+    const total = (accounts || 0) + (sites || 0);
+
+    // animate the combined total
+    animateValue("accounts", 0, total, 1200);
+  };
+
+  // animate groups + price lists
+  animateValue("groups", 0, totalGroups || 0, 1000);
+  animateValue("priceLists", 0, totalPriceLists || 0, 1000);
+
+  loadData();
+}, [totalGroups, totalPriceLists]);
+
 
   const tiles = [
-    { label: "Accounts", to: "../pricingAccount", value: null },
-    { label: "Groups", to: "../groupsData", value: animated.groups },
+   { label: "Accounts", to: "../pricingAccount", value: animated.accounts },
+  { label: "Groups", to: "../groupsData", value: animated.groups },
     // { label: "Price Lists", to: "../priceListsData", value: animated.priceLists },
     // { label: "ERP Load", to: "../completedTasks", value: null },
   ];

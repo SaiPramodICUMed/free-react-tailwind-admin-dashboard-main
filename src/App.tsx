@@ -57,6 +57,7 @@ import ManuallyUpdating from "./pages/Pricing/ERPLoad/ManuallyUpdating";
 import LettingExpire from "./pages/Pricing/ERPLoad/LettingExpire";
 import RecentlyLoaded from "./pages/Pricing/ERPLoad/RecentlyLoaded";
 import TaskDetailsPage from "./pages/Pricing/TaskDetailsPage";
+import GroupConfirmSelection from "./pages/Pricing/GroupConfirmSelection";
 import Approvals from "./pages/Pricing/Approvals";
 import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
 import ConfirmSelectionMultiple from "./pages/Pricing/Accounts/ConfirmSelectionMultiple";
@@ -104,6 +105,8 @@ export default function App() {
                 <Route index path="/priceListsData" element={<PriceListsData />} />
                 <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
                 <Route index path="/confirmSelectionMultiple" element={<ConfirmSelectionMultiple />} />
+                <Route index path="/groupConfirmSelection" element={<GroupConfirmSelection />} />
+                
                 <Route index path="/newCustomer" element={<NewCustomer />} />
                 <Route index path="/taskDetails" element={<TaskDetails />} />
                 <Route index path="/pricingTable" element={<PricingTable />} />
