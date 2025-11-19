@@ -15,10 +15,13 @@ interface MyComponentProps {
   setSelectedRows?: (rows: any) => void;
   handleViewDetails?: (row: any) => void;
   viewDetails?: boolean;
+   handleCreate?:(row:any)=>void;
+   createOption?:boolean;
+   //={handleCreate} createOption={true}
 }
 
 
-export default function BasicTables({page,inboxData,columns,checkBox,setSelectedRows,handleViewDetails,viewDetails}: MyComponentProps) {
+export default function BasicTables({page,inboxData,columns,checkBox,setSelectedRows,handleViewDetails,viewDetails,handleCreate,createOption}: MyComponentProps) {
  // const [selected, setSelected] =  useState<any[]>([]);
  // console.log("tabledata",selected);
   return (
@@ -31,7 +34,7 @@ export default function BasicTables({page,inboxData,columns,checkBox,setSelected
       {/* {selected.length} */}
       {/* <PageBreadcrumb pageTitle = {`${page} - Data`} /> */}
       <div className="space-y-6">       
-        {checkBox ? <BasicTableTwo columns={columns} data={inboxData} setSelected={setSelectedRows} viewDetails={viewDetails} handleViewDetails={handleViewDetails}/> :
+        {checkBox ? <BasicTableTwo columns={columns} data={inboxData} setSelected={setSelectedRows} viewDetails={viewDetails} handleViewDetails={handleViewDetails} handleCreate={handleCreate} createOption={createOption}/> :
           <BasicTableOne columns={columns} data={inboxData} />}
           {/* <BasicTableWithFIlter columns={columns} data={inboxData} /> */}
        

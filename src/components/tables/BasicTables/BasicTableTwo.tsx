@@ -6,12 +6,16 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   setSelected,
   viewDetails = false,
   handleViewDetails,
+  handleCreate,
+  createOption=false,
 }: {
   columns: any[];
   data: T[];
   setSelected?: React.Dispatch<React.SetStateAction<T[]>>;
   viewDetails?: boolean;
   handleViewDetails?: (row: any) => void;
+  handleCreate?: (row: any) => void;
+  createOption?:boolean;
 }) {
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
@@ -93,6 +97,12 @@ export default function BasicTableTwo<T extends Record<string, any>>({
           <thead className="border-b border-gray-100 bg-[#0065bd] sticky top-0 z-30">
             <tr>
               {/* ✅ Sticky Checkbox Header Fix */}
+              { createOption&& (
+                <th className="px-5 py-3 font-medium text-white text-start text-sm w-[120px]">
+                  Create
+                </th>
+
+              )}
               <th
                 className="px-4 py-3 font-medium text-white text-start text-sm w-[40px] sticky left-0 z-40 bg-blue-800"
                 style={{ backgroundColor: "#0065bd" }} // same as bg-blue-800
@@ -130,6 +140,16 @@ export default function BasicTableTwo<T extends Record<string, any>>({
             {tableData.length > 0 ? (
               tableData.map((row, rowIndex) => (
                 <tr key={row.TaskId ?? rowIndex} className="hover:bg-gray-50">
+                  {createOption && (
+                    <td className="px-4 py-3 w-[120px]">
+                      <button
+                        className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700"
+                        onClick={() => handleCreate?.(row)}
+                      >
+                        Details
+                      </button>
+                    </td>
+                  )}
                   {/* ✅ Sticky Checkbox Column Fix */}
                   <td
                     className="px-4 py-3 text-center w-[40px] sticky left-0 z-20 bg-white"

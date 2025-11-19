@@ -66,6 +66,9 @@ export default function GroupsData() {
   console.log("Parent received:", row);
   getAccountDetails(row);
 };
+const handleCreate = (row:any) => {
+    console.log("Parent received:", row);
+}
 
   const fetchCount = async () => {
     setLoading(true);
@@ -188,6 +191,7 @@ export default function GroupsData() {
             checkBox={true}
             setSelectedRows={setSelectedRows}
              handleViewDetails={handleViewDetails} viewDetails={true}
+             handleCreate={handleCreate} createOption={false}
           />
         </div>
 
