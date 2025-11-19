@@ -4,10 +4,14 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   columns = [],
   data = [],
   setSelected,
+  viewDetails = true, 
+  handleViewDetails, 
 }: {
   columns: any[];
   data: T[];
   setSelected?: React.Dispatch<React.SetStateAction<T[]>>;
+  viewDetails?: boolean;
+   handleViewDetails?: (row: any) => void;
 }) {
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
@@ -84,6 +88,12 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
               </th>
+                {viewDetails && (
+  <th className="px-5 py-3 font-medium text-white text-start text-sm w-[120px]">
+    Actions
+  </th>
+  
+)}
 
               {columns.map((col) => (
                 <th
@@ -93,7 +103,8 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                   {col.header}
                 </th>
               ))}
-            </tr>
+            
+          </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-100 text-xs">
@@ -114,6 +125,16 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                       onChange={() => toggleCheckbox(rowIndex)}
                     />
                   </td>
+                   {viewDetails && (
+  <td className="px-4 py-3 w-[120px]">
+    <button
+      className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700"
+      onClick={() => handleViewDetails?.(row)}
+    >
+     Details
+    </button>
+  </td>
+)}
 
                   {columns.map((col) => {
                     const cellValue = row[col.accessor] ?? "-";
@@ -129,6 +150,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                       </td>
                     );
                   })}
+                 
                 </tr>
               ))
             ) : (
