@@ -3,9 +3,14 @@ import { Modal } from "../ui/modal";
 import Button from "../ui/button/Button";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
+import { useState } from "react";
 
 export default function UserAddressCard() {
   const { isOpen, openModal, closeModal } = useModal();
+    const [actionAlerts, setActionAlerts] = useState(true);
+    const [includeChangeSummary, setIncludeChangeSummary] = useState(true);
+    const [emailComments, setEmailComments] = useState(true);
+    const [summaryReport, setSummaryReport] = useState("No");
   const handleSave = () => {
     // Handle save logic here
     console.log("Saving changes...");
@@ -16,51 +21,134 @@ export default function UserAddressCard() {
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
+            <div>
             <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-              Address
+              Email
             </h4>
+</div>
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-1 lg:gap-7 2xl:gap-x-32">
+              <div className="space-y-6">
+      {/* Row: Requirement Alerts */}
+      <EmailRow
+        label="Requirement Alerts:"
+        description="Emails to inform users when an approval decision is needed"
+      >
+        <div className="text-right">
+          <span className="text-gray-700">Individual</span>
+        </div>
+      </EmailRow>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
-              <div>
+      {/* Row: Deadline Alerts */}
+      <EmailRow
+        label="Deadline Alerts:"
+        description="Email to inform users when tasks have reached their deadline"
+      >
+        <div className="text-right">
+          <span className="text-gray-700">Daily Summary</span>
+        </div>
+      </EmailRow>
+
+      {/* Row: Action Alerts (checkbox on right) */}
+      <EmailRow
+        label="Action Alerts:"
+        description="Emails detailing all approval actions (decline, approve, completed etc)"
+      >
+        <div className="text-right">
+          <input
+            type="checkbox"
+            checked={actionAlerts}
+            onChange={(e) => setActionAlerts(e.target.checked)}
+            className="h-5 w-5 text-blue-600"
+          />
+        </div>
+      </EmailRow>
+
+      {/* Row: Summary Reports */}
+      <EmailRow
+        label="Summary Reports:"
+        description="A summary (daily/weekly) of all above alerts"
+      >
+        <div className="text-right">
+          <select
+            value={summaryReport}
+            onChange={(e) => setSummaryReport(e.target.value)}
+            className="border rounded px-3 py-1"
+          >
+            <option>No</option>
+            <option>Daily</option>
+            <option>Weekly</option>
+          </select>
+        </div>
+      </EmailRow>
+
+      {/* Row: Include change summary */}
+      <EmailRow label="Include change summary:" description="">
+        <div className="text-right">
+          <input
+            type="checkbox"
+            checked={includeChangeSummary}
+            onChange={(e) => setIncludeChangeSummary(e.target.checked)}
+            className="h-5 w-5 text-blue-600"
+          />
+        </div>
+      </EmailRow>
+
+      {/* Row: Comments */}
+      <EmailRow label="Comments:" description="">
+        <div className="text-right">
+          <input
+            type="checkbox"
+            checked={emailComments}
+            onChange={(e) => setEmailComments(e.target.checked)}
+            className="h-5 w-5 text-blue-600"
+          />
+        </div>
+      </EmailRow>
+
+      {/* <div className="text-center">
+        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
+      </div> */}
+    </div>
+              {/* <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                   Country
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   United States.
                 </p>
-              </div>
+              </div> */}
 
-              <div>
+              {/* <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                   City/State
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   Phoenix, Arizona, United States.
                 </p>
-              </div>
+              </div> */}
 
-              <div>
+              {/* <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                   Postal Code
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   ERT 2489
                 </p>
-              </div>
+              </div> */}
 
-              <div>
+              {/* <div>
                 <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                   TAX ID
                 </p>
                 <p className="text-sm font-medium text-gray-800 dark:text-white/90">
                   AS4568384
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 
           <button
-            onClick={openModal}
+          //  onClick={openModal}
             className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
           >
             <svg
@@ -78,7 +166,7 @@ export default function UserAddressCard() {
                 fill=""
               />
             </svg>
-            Edit
+            Save
           </button>
         </div>
       </div>
@@ -128,5 +216,33 @@ export default function UserAddressCard() {
         </div>
       </Modal>
     </>
+  );
+}
+
+/* ------------------------- EMAIL ROW (3-column: label | desc | control) ------------------------- */
+function EmailRow({
+  label,
+  description,
+  children,
+}: {
+  label: string;
+  description?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-12 items-start gap-4">
+      {/* Label */}
+      <div className="col-span-3">
+        <p className="font-semibold text-gray-700 text-sm">{label}</p>
+      </div>
+
+      {/* Description (italic, muted) */}
+      <div className="col-span-7">
+        <p className="text-gray-600 italic text-sm">{description}</p>
+      </div>
+
+      {/* Control (right-aligned) */}
+      <div className="col-span-2 flex justify-end items-center text-sm">{children}</div>
+    </div>
   );
 }
