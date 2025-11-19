@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { taskId } from "../../../store/userSlice";
 type ItemsSelection = "blank" | "advanced";
 
 type Props = {
@@ -61,6 +62,7 @@ const ConfirmSelection: React.FC<Props> = ({
     const selectedApprovals = useSelector((state: any) => state.user.userApprovals);
     const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
     const [localDataPeriod, setLocalDataPeriod] = useState<string | undefined>(dataPeriod);
+    const dispatch = useDispatch();
 
     // NOTE: selectedPriceListType is number OR empty string initially
     const [selectedCurrency, setSelectedCurrency] = useState<string>(currency || "");
@@ -194,6 +196,7 @@ const ConfirmSelection: React.FC<Props> = ({
                 payload
             );
             console.log('Task Details', response.data);
+            dispatch(taskId(response.data));
             setCreateTaskId(response.data);
             return response.data;
 

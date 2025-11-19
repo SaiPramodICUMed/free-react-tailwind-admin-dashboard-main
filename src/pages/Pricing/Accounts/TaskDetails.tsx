@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import DatePicker from "react-datepicker";
 import axios from "axios";
 import "react-datepicker/dist/react-datepicker.css";
+import { useSelector } from "react-redux";
 
 const TaskDetails: React.FC = () => {
   const today = new Date();
@@ -18,7 +19,8 @@ const TaskDetails: React.FC = () => {
   const [validUntil, setValidUntil] = useState("duration");
   const [validUntilDuration, setValidUntilDuration] = useState("1month");
   const [validUntilDate, setValidUntilDate] = useState<Date | null>(nextYear);
-
+  const user = useSelector((state: any) => state.user.users);
+  const taskId = useSelector((state: any) => state.user.taskDetails);
   const [customer, setCustomer] = useState({
     name: "",
     telephone: "",
@@ -71,11 +73,12 @@ const TaskDetails: React.FC = () => {
           (1000 * 60 * 60 * 24);
         expiryDays = Math.max(1, Math.round(diff));
       }
+      console.log('taskid', taskId);
 
       // --------- API PAYLOAD ---------
       const payload = {
-        taskID: 253487, // 🔥 Replace with actual TaskID from Redux
-        userID: 8359,   // 🔥 Replace with actual Logged-in user ID
+        taskID: taskId.taskId, // 🔥 Replace with actual TaskID from Redux
+        userID: user.userId,   // 🔥 Replace with actual Logged-in user ID
         contact: customer.reference,
         contactNumber: customer.telephone,
         address: customer.address,

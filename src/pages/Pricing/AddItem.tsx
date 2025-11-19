@@ -7,31 +7,25 @@ import { resetRecords } from "../../store/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import Pagination from "../../components/Pagination";
 
-interface RowData {
-  item: string;
-  description: string;
-  franchise: string;
-  gph1: string;
-  gph2: string;
-  gph3: string;
-  gph4: string;
-  gph5: string;
-  status: string;
-  sales: string;
-}
-
 const AddItem: React.FC = () => {
   const user = useSelector((state: any) => state.user.users);
+  const taskId = useSelector((state: any) => state.user.taskDetails);
+
   const [filterMode, setFilterMode] = useState<"sales" | "all">("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
   const [totalRecords, setTotalRecords] = useState(1);
+  const [selectedCount, setSelectedCount] = useState(0);
   const [totalPages, setTotalPages] = useState(
     Math.ceil(totalRecords / user.gridPageSize)
   );
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const columns = [
     { header: "Item", accessor: "Item" },
@@ -46,26 +40,27 @@ const AddItem: React.FC = () => {
     { header: "Sales", accessor: "Sales" },
   ];
 
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [tableData, setTableData] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // -------------------------
+  // 🔥 Build API filter string
+  // -------------------------
+  const buildFilter = () => {
+    let filter = `AND TaskId = ${taskId.taskId}`;
 
-  const setPageChange = (pageNumber: number, listPerPage?: number) => {
-    const noOfrecordsPerPage = listPerPage || recordsPerPage;
-    setCurrentPage(pageNumber);
-
-    let start = pageNumber === 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
-    let end = pageNumber === 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
-
-    fetchData(start, end);
+    if (filterMode === "sales") {
+      filter += ` AND Sales IS NOT NULL`;
+    }
+    return filter;
   };
 
+  // -------------------------
+  // Fetch Count
+  // -------------------------
   const fetchCount = async () => {
     setLoading(true);
     try {
       const payload = {
         viewName: `vw_MissingItems`,
-        filter: `AND TaskId = 255457 AND Sales IS NOT NULL`,
+        filter: buildFilter(),
       };
 
       const response = await axios.post(
@@ -78,8 +73,24 @@ const AddItem: React.FC = () => {
       setLoading(false);
       return response.data;
     } catch {
+      setLoading(false);
       return null;
     }
+  };
+
+  // -------------------------
+  // Pagination Logic
+  // -------------------------
+  const setPageChange = (pageNumber: number, listPerPage?: number) => {
+    const noOfrecordsPerPage = listPerPage || recordsPerPage;
+    setCurrentPage(pageNumber);
+
+    const start =
+      pageNumber === 0 ? 1 : (pageNumber - 1) * noOfrecordsPerPage + 1;
+    const end =
+      pageNumber === 0 ? user.gridPageSize : pageNumber * noOfrecordsPerPage;
+
+    fetchData(start, end);
   };
 
   const changeRecordsPerPage = (recordsPerPage: number) => {
@@ -88,17 +99,9 @@ const AddItem: React.FC = () => {
     setPageChange(1, recordsPerPage);
   };
 
-  const selected = () => {
-    const selected = selectedRows.filter((row: any) => row.checked);
-    if (selected.length === 0) {
-      alert("Please select at least one record");
-      return;
-    } else {
-      dispatch(resetRecords(selected));
-      navigate("/pricingTable");
-    }
-  };
-
+  // -------------------------
+  // Fetch Data
+  // -------------------------
   const fetchData = async (start: number, end: number) => {
     setLoading(true);
     try {
@@ -108,7 +111,7 @@ const AddItem: React.FC = () => {
         lastRow: end,
         sortBy: "Item",
         sortByDirection: "asc",
-        filter: `AND TaskId = 253459`,
+        filter: buildFilter(),
         fieldList: "*",
         timeout: 0,
       };
@@ -123,18 +126,50 @@ const AddItem: React.FC = () => {
       setLoading(false);
       return response.data;
     } catch {
+      setLoading(false);
       return null;
     }
   };
 
+  // -------------------------
+  // Load Initial Data
+  // -------------------------
   useEffect(() => {
     fetchData(1, user.gridPageSize);
     fetchCount();
   }, []);
 
+  // -------------------------
+  // Reload data when filterMode changes
+  // -------------------------
+  useEffect(() => {
+    fetchData(1, user.gridPageSize);
+    fetchCount();
+  }, [filterMode]);
+
   useEffect(() => {
     setTotalPages(Math.ceil(totalRecords / recordsPerPage));
   }, [recordsPerPage, totalRecords]);
+
+  useEffect(() => {
+    const count = selectedRows.filter((r: any) => r.checked).length;
+    setSelectedCount(count);
+  }, [selectedRows]);
+
+
+  // -------------------------
+  // Add selected SKUs
+  // -------------------------
+  const selected = () => {
+    const selected = selectedRows.filter((row: any) => row.checked);
+    if (selected.length === 0) {
+      alert("Please select at least one record");
+      return;
+    } else {
+      dispatch(resetRecords(selected));
+      navigate("/pricingTable");
+    }
+  };
 
   return (
     <div className="w-full h-full p-3 bg-white text-sm">
@@ -166,14 +201,6 @@ const AddItem: React.FC = () => {
           />
           All SKUs
         </label>
-
-        <div className="ml-auto flex gap-2">
-          <button className="px-3 py-1 border rounded bg-blue-50 text-blue-700">
-            Basic
-          </button>
-          <button className="px-3 py-1 border rounded">Advanced</button>
-          <button className="px-3 py-1 border rounded">Paste</button>
-        </div>
       </div>
 
       {/* Table */}
@@ -205,15 +232,16 @@ const AddItem: React.FC = () => {
 
         <div className="flex gap-3">
           <button className="px-4 py-1.5 border rounded bg-gray-100 text-gray-700">
-            Add All Filtered SKUs (10616 in filter)
+            Add All Filtered SKUs ({totalRecords} in filter)
           </button>
 
           <button
             className="px-4 py-1.5 rounded bg-blue-600 text-white"
             onClick={selected}
           >
-            Add Selected SKUs (0 selected)
+            Add Selected SKUs ({selectedCount} selected)
           </button>
+
         </div>
       </div>
     </div>
