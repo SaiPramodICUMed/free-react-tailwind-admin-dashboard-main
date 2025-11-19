@@ -83,8 +83,8 @@ export default function PricingDashboard() {
   const tiles = [
     { label: "Accounts", to: "../pricingAccount", value: null },
     { label: "Groups", to: "../groupsData", value: animated.groups },
-    { label: "Price Lists", to: "../priceListsData", value: animated.priceLists },
-    { label: "ERP Load", to: "../completedTasks", value: null },
+    // { label: "Price Lists", to: "../priceListsData", value: animated.priceLists },
+    // { label: "ERP Load", to: "../completedTasks", value: null },
   ];
 
   return (

@@ -56,7 +56,10 @@ import AwaitingLoad from "./pages/Pricing/ERPLoad/AwaitingLoad";
 import ManuallyUpdating from "./pages/Pricing/ERPLoad/ManuallyUpdating";
 import LettingExpire from "./pages/Pricing/ERPLoad/LettingExpire";
 import RecentlyLoaded from "./pages/Pricing/ERPLoad/RecentlyLoaded";
+import TaskDetailsPage from "./pages/Pricing/TaskDetailsPage";
+import Approvals from "./pages/Pricing/Approvals";
 import ConfirmSelectionAccount from "./pages/Pricing/Accounts/ConfirmSelection";
+import ConfirmSelectionMultiple from "./pages/Pricing/Accounts/ConfirmSelectionMultiple";
 import NewCustomer from "./pages/Pricing/Accounts/NewCustomer";
 import TaskDetails from "./pages/Pricing/Accounts/TaskDetails";
 import PricingSite from "./pages/Pricing/Accounts/Site";
@@ -67,6 +70,11 @@ import PricingTable from "./pages/Pricing/PricingTable";
 import AddItem from "./pages/Pricing/AddItem";
 import ResetPassword from "./pages/AuthPages/ResetPassword";
 import UserSettings from "./pages/Settings/Settings";
+
+import Currency from "./pages/AdminPages/Currency";
+import CurrentCurrency from "./pages/AdminPages/CurrentCurrency";
+import CurrencyHistory from "./pages/AdminPages/CurrencyHistory";
+import UpdateCurrency from "./pages/AdminPages/UpdateCurrency";
 
 export default function App() {
   return (
@@ -87,12 +95,15 @@ export default function App() {
                 <Route index path="/trash" element={<Trash />} />
                 <Route index path="/all" element={<All />} />
                 <Route index path="/pricingDashboard" element={<PricingDashboard />} />
+                <Route index path="/taskDetailsPage" element={<TaskDetailsPage />} />
+                <Route index path="/approvals" element={<Approvals />} />
                 <Route index path="/pricingAccount" element={<PricingAccount />} />
                 <Route index path="/completedTasks" element={<CompletedTasks />} />
                 <Route index path="/pricingSite" element={<PricingSite />} />
                 <Route index path="/groupsData" element={<GroupsData />} />
                 <Route index path="/priceListsData" element={<PriceListsData />} />
                 <Route index path="/confirmSelectionAccount" element={<ConfirmSelectionAccount />} />
+                <Route index path="/confirmSelectionMultiple" element={<ConfirmSelectionMultiple />} />
                 <Route index path="/newCustomer" element={<NewCustomer />} />
                 <Route index path="/taskDetails" element={<TaskDetails />} />
                 <Route index path="/pricingTable" element={<PricingTable />} />
@@ -125,6 +136,11 @@ export default function App() {
                 <Route index path="/editColumnPermissions" element={<EditColumnPermissions />} />
                  <Route index path="/resetPassword" element={<ResetPassword />} />
                  <Route index path="/UserSettings" element={<UserSettings />} />
+
+                 <Route index path="/currency" element={<Currency />} />
+                <Route index path="/currentCurrency" element={<CurrentCurrency />} />
+                <Route index path="/currencyHistory" element={<CurrencyHistory />} />
+                <Route index path="/updateCurrency" element={<UpdateCurrency /> } />
 
                 {/* Others Page */}
                 <Route path="/profile" element={<UserProfiles />} />

@@ -1,4 +1,4 @@
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
@@ -68,6 +68,7 @@ const getUserDetails = async () => {
 
 useEffect(() => {
     dispatch(addUser({}));
+    console.log('user cleared');
   }, []);
 
   return (
@@ -158,7 +159,5 @@ useEffect(() => {
     </div>
   );
 }
-function useEffect(arg0: () => void, arg1: never[]) {
-  throw new Error("Function not implemented.");
-}
+
 

@@ -23,27 +23,12 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Inbox",
-    subItems: [
-      { name: "Dashbord", path: "/home", pro: false },
-      // { name: "Drafts", path: "/drafts", pro: false },
-      // { name: "In Progress", path: "/inprogress", pro: false },
-      // { name: "Awaiting Results", path: "/awaitingresults", pro: false },
-      // { name: "Completed", path: "/completed", pro: false },
-      // { name: "Cancelled", path: "/cancelled", pro: false },
-      // { name: "Trash", path: "/trash", pro: false },
-      // { name: "All", path: "/all", pro: false },
-    ],
+    path: "/home", // direct path instead of subItems
   },
   {
     name: "Pricing",
     icon: <ListIcon />,
-    subItems: [
-      { name: "Dashbord", path: "/pricingDashboard", pro: false },
-      // { name: "Accounts", path: "/", pro: false },
-      // { name: "Groups", path: "/form-elements", pro: false },
-      // { name: "Price Lists", path: "/form-elements", pro: false },
-      // { name: "ERP Load", path: "/form-elements", pro: false },
-    ],
+    path: "/pricingDashboard", // direct path instead of subItems
   },
   {
     name: "Reports",
@@ -83,6 +68,17 @@ const navItems: NavItem[] = [
       { name: "Translation", path: "/translation", pro: false },
       { name: "Country Settings", path: "/countrySettings", pro: false },
       { name: "Templates", path: "/templates", pro: false },
+    ],
+  },
+  {
+    name: "Import",
+    icon: <PageIcon />,
+    subItems: [
+      { name: "Currency", path: "/currency", pro: false },
+      { name: "Targets and Floors", path: "/", pro: false },
+      { name: "Legacy Buying Groups", path: "/", pro: false },
+      { name: "Legacy Accounts", path: "/", pro: false },
+      { name: "Territory Management", path: "/", pro: false },
     ],
   },
 ];

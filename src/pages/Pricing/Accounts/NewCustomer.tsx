@@ -16,17 +16,12 @@ type Props = {
     onBack?: () => void;
     onConfirm?: () => void;
     onClose?: () => void;
-    // If you want it controlled, you can provide change handlers:
     onChangeDataPeriod?: (v: string) => void;
     onChangeTaskType?: (v: string) => void;
     onChangeCurrency?: (v: string) => void;
     onChangePriceListType?: (v: string) => void;
     onChangeItemsSelection?: (v: ItemsSelection) => void;
     className?: string;
-    /**
-     * Optional breakpoints override (in pixels). If not provided,
-     * component uses default mobile breakpoint of 760px.
-     */
     mobileBreakpoint?: number;
 };
 
@@ -48,27 +43,41 @@ const NewCustomer: React.FC<Props> = ({
     className,
     mobileBreakpoint = 760,
 }) => {
-    // responsive state based on window width (kept for optional logic if needed)
     const [isMobile, setIsMobile] = useState<boolean>(() => {
         if (typeof window === "undefined") return false;
         return window.innerWidth <= mobileBreakpoint;
     });
+
     const user = useSelector((state: any) => state.user.users);
+    //const selected = useSelector((state: any) => state.user.selectedRecords);
+    const selectedApprovals = useSelector((state: any) => state.user.userApprovals);
+    const countries: [] = useSelector((state: any) => state.user.countries);
+
     const [taskTypes, setTaskTypes] = useState([]);
     const [currencies, setCurrencies] = useState([]);
     const [priceListTypes, setPriceListTypes] = useState([]);
     const [segments, setSegments] = useState([]);
     const [nextTaskNumber, setNextTaskNumber] = useState({});
-    const selected = useSelector((state: any) => state.user.selectedRecords);
+    const [newSegmentId, setNewSegmentId] = useState({});
     const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
-  const [selectedValue, setSelectedValue] = useState(user.activeCountryId);
-  const countries: [] = useSelector((state: any) => state.user.countries);
-  const handleChange = (event: any) => {
-    setSelectedValue(event.target.value);
-  };
-  const handleSegmentChange = (event: any) => {
-    setSegments(event.target.value);
-  };
+
+    const [selectedValue, setSelectedValue] = useState(user.activeCountryId);
+    const [selectedSegmentValue, setselectedSegmentValue] = useState(0);
+
+    const [newCustomerName, setNewCustomerName] = useState("");
+
+    const [selectedCurrency, setSelectedCurrency] = useState("");
+    const [selectedPriceListType, setSelectedPriceListType] = useState("");
+
+
+    const handleChange = (event: any) => {
+        setSelectedValue(event.target.value);
+    };
+
+    const handleSegmentChange = (event: any) => {
+        setselectedSegmentValue(Number(event.target.value));
+    };
+
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= mobileBreakpoint);
         window.addEventListener("resize", handleResize);
@@ -76,87 +85,73 @@ const NewCustomer: React.FC<Props> = ({
         return () => window.removeEventListener("resize", handleResize);
     }, [mobileBreakpoint]);
 
-    const handleSelectChange =
-        (cb?: (v: string) => void) =>
-            (e: React.ChangeEvent<HTMLSelectElement>) => {
-                cb && cb(e.target.value);
-            };
-
-    const handleItemsChange = (v: ItemsSelection) => {
-        onChangeItemsSelection && onChangeItemsSelection(v);
-    };
-
-
     const getTaskPrefix = (taskTypeId: number) => {
         switch (taskTypeId) {
-            case 1: return "P";   // Price List
-            case 2: return "Q";   // Quote/Offer
-            case 3: return "T";   // Tender
+            case 1: return "P";
+            case 2: return "Q";
+            case 3: return "T";
             case 4:
-            case 6: return "R";   // Renewal / Rate Revision
-            case 7: return "QP";  // Quote Off Price List
-            case 8: return "CH";  // Capital & Hardware
-            default: return "";   // fallback
+            case 6: return "R";
+            case 7: return "QP";
+            case 8: return "CH";
+            default: return "";
         }
     };
 
-
-    const fetchTaskType = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
+    const fetchNewTaskSegmentId = async () => {
         try {
             const payload = {
-                userId: user.userId
+                userId: user.userId,
+                countryId: user.activeCountryId,
+                createTaskType: 1,
+                accountIds: [],
+                siteIds: [],
+                priceLists: [],
+                groupId: null
             };
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetNewTaskSegmentId`,
+                payload
+            );
+            setNewSegmentId(response.data);
+            return response.data;
+        } catch {
+            return null;
+        }
+    };
 
-            // 👈 second argument is the body (data)
+    const fetchTaskType = async () => {
+        try {
+            const payload = { userId: user.userId };
             const response = await axios.post(
                 `https://10.2.6.130:5000/api/Pricing/getTaskTypes`,
                 payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("Task Types API Response:", response.data);
             setTaskTypes(response.data);
-            //setLoading(false);
             return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+        } catch {
             return null;
         }
     };
 
     const fetchNextTaskNumber = async (arg: any) => {
-        console.log('Taskname', arg);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
-            const payload =
-                arg
-                ;
-            console.log('Taskname Payload', payload);
-            // 👈 second argument is the body (data)
             const response = await axios.post(
                 `https://10.2.6.130:5000/api/Pricing/GetNextTaskNumber`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                arg,
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("NextTaskNumber API Response:", response.data);
             setNextTaskNumber(response.data);
-            //setLoading(false);
             return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+        } catch {
             return null;
         }
     };
 
     const fetchPriceListType = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
             const payload = {
                 viewName: `lkpDirectIndirect`,
@@ -166,139 +161,175 @@ const NewCustomer: React.FC<Props> = ({
                 fieldList: "[Id] AS Value, Name as Text",
                 timeout: 0,
             };
-
-            // 👈 second argument is the body (data)
             const response = await axios.post(
                 `https://10.2.6.130:5000/api/Metadata/getDataNoPaging`,
                 payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("Price List Types API Response:", response.data);
             setPriceListTypes(response.data);
-            //setLoading(false);
             return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+        } catch {
             return null;
         }
     };
 
     const fetchSegments = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
-            const payload = {
-                countryId: user.activeCountryId,
-                deleted: true
-            };
+            const payload = { countryId: user.activeCountryId, deleted: true };
 
-            // 👈 second argument is the body (data)
             const response = await axios.post(
                 `https://vm-www-dprice01.icumed.com:5000/api/Strategy/getAllSegments`,
                 payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("Segments:", response.data);
             setSegments(response.data);
-            //setLoading(false);
             return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+        } catch {
             return null;
         }
     };
 
     const fetchCurrencies = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
-
-            // 👈 second argument is the body (data)
             const response = await axios.get(
                 `https://10.2.6.130:5000/api/Pricing/getCurrencies`,
-
-                { headers: { "Content-Type": "application/json" } } // optional config
+                { headers: { "Content-Type": "application/json" } }
             );
 
-            console.log("Currencies API Response:", response.data);
             setCurrencies(response.data);
-            //setLoading(false);
             return response.data;
-        } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+        } catch {
             return null;
         }
     };
-    const navigate = useNavigate();
-    const save = () => {
-        //console.log("selectedRows",selectedRows);
-        //const selected = selectedRows.filter((row: any) => row.checked);
-        if (selected.length === 0) {
-            //alert("Please select at least one record");
-            navigate("/taskDetails");
-        } else {
-            console.log("selected", selected);
-            //dispatch(resetRecords(selected));
-            navigate("/taskDetails");
-        }
+
+    const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – New Customer – ${newCustomerName || ""}`;
+
+    const fetchNextNumberWhenReady = () => {
+        if (!selectedTaskTypeId) return;
+        fetchNextTaskNumber(baseTaskName);
     };
+
+    useEffect(fetchNextNumberWhenReady, [selectedTaskTypeId, newCustomerName]);
 
     useEffect(() => {
         fetchTaskType();
         fetchCurrencies();
         fetchPriceListType();
         fetchSegments();
+        fetchNewTaskSegmentId();
     }, []);
 
     useEffect(() => {
         fetchTaskType().then(data => {
             if (data && data.length > 0) {
-                setSelectedTaskTypeId(data[0].id); // First item selected by default
+                setSelectedTaskTypeId(data[0].id);
             }
         });
-
     }, []);
 
-    const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – ${selected[0].AccountNumber} – ${selected[0].AccountName}`;
-    useEffect(() => {
-        if (!selectedTaskTypeId || !selected?.length) return;
-        fetchNextTaskNumber(baseTaskName);
-    }, [selectedTaskTypeId, selected]);
+    const createTask = async () => {
+        console.log("create task called");
+        try {
+            console.log("user:", user);
+            //console.log("selected:", selected);
+            console.log("selectedApprovals:", selectedApprovals);
+
+            const payload = {
+                userId: user?.userId,
+                historyStartDate: 0,
+                historyEndDate: 0,
+                salesHistoryMaxPeriod: 0,
+                countryId: user.activeCountryId,
+                createTaskType: 1,
+                accounts: [],
+                sites: [],
+                priceLists: [],
+                groupId: null,
+                segmentId: selectedSegmentValue,
+                taskName: `${baseTaskName}`,
+                currencyCode: selectedCurrency,          // ✅ FIXED
+                taskTypeId: selectedTaskTypeId,
+                approvalId: selectedApprovals?.[0]?.id,
+                newCustomerName: newCustomerName,
+                dataSource: 0,
+                sales: 0,
+                directIndirect: Number(selectedPriceListType), // ✅ FIXED
+                priceListExpiry: null,
+                priceChange: null,
+                baseURL: "",
+                specifiedItems: []
+            };
 
 
+            console.log("new customer payload", payload);
 
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/AddTask`,
+                payload
+            );
+
+            console.log("create response", response.data);
+            return response.data;
+
+        } catch (err) {
+            console.error("createTask() ERROR:", err);
+            return null;
+        }
+    };
+
+
+    const navigate = useNavigate();
+
+    const save = async () => {
+        if (!newCustomerName.trim()) {
+            alert("Please enter a New Customer Name.");
+            return;
+        }
+
+        // ❗ VALIDATION FOR SEGMENT
+        if (selectedSegmentValue === 0) {
+            alert("Please select a Customer Segment.");
+            return;
+        }
+
+        if (!selectedApprovals?.length) {
+            alert("No approvals selected");
+            return;
+        }
+
+        const response = await createTask();
+        console.log('res', response);
+        if (response?.taskId > 0) navigate("/taskDetails");
+        else {
+            //alert("Something went wrong! Please try again.");
+            //navigate("/pricingAccount");
+        }
+    };
 
     return (
         <div>
-            {/* Container */}
             <div>
-                {/* Header */}
-
-
-                {/* Content */}
                 <div className="px-6 py-5 min-h-[14rem]">
-                    {/* Task Name */}
                     <div className={`flex ${isMobile ? "flex-col items-start gap-2" : "items-center"} mb-4`}>
                         <label className={`font-semibold  ${isMobile ? "w-auto" : "w-[200px]"}`}>
                             New Customer Name
                         </label>
                         <input
-                            value=""
+                            value={newCustomerName}
+                            onChange={(e) => setNewCustomerName(e.target.value)}
                             className="flex-1 max-w-[600px] w-full px-2 py-2 border border-gray-300 rounded-sm bg-white"
                         />
-
                     </div>
 
                     <div className={`flex ${isMobile ? "flex-col items-start gap-2" : "items-center"} mb-4`}>
                         <label className={`font-semibold  ${isMobile ? "w-auto" : "w-[200px]"}`}>
                             Country
                         </label>
-                        <select id="fruit-select" value={selectedValue} onChange={handleChange}
-                            className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none">
+                        <select value={selectedValue} onChange={handleChange}
+                            className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white">
                             {countries.map((option: any) => (
                                 <option key={option.countryId} value={option.countryId}>
                                     {option.countryName}
@@ -307,31 +338,16 @@ const NewCustomer: React.FC<Props> = ({
                         </select>
                     </div>
 
-                    {/* Options title */}
                     <h3 className="text-base font-semibold  mb-3">Options</h3>
 
-                    {/* Options grid: 2 columns on md+, 1 column on small */}
                     <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-2"} mb-4`}>
-                        <div className="flex flex-col">
-                            <label className="mb-1 font-semibold text-slate-800">Data Period</label>
-                            <select
-                                value={dataPeriod}
-                                onChange={handleSelectChange(onChangeDataPeriod)}
-                                className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
-                            >
-                                <option>1 year</option>
-                                <option>6 months</option>
-                                <option>2 years</option>
-                            </select>
-                            <div className="mt-1 text-sm text-slate-500">* 2.1 years of Data Available</div>
-                        </div>
 
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Task Type</label>
                             <select
                                 value={selectedTaskTypeId ?? ""}
                                 onChange={(e) => setSelectedTaskTypeId(Number(e.target.value))}
-                                className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
+                                className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
                                 {taskTypes?.map((option: any) => (
                                     <option key={option.id} value={option.id}>
@@ -339,29 +355,34 @@ const NewCustomer: React.FC<Props> = ({
                                     </option>
                                 ))}
                             </select>
-
                         </div>
 
-                        <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-2"} mb-4`}>
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Customer Segment</label>
-                            <select id="segments" value={selectedValue} onChange={handleSegmentChange}
-                            className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white">
-                            {segments.map((option: any) => (
-                                <option key={option.segmentId} value={option.segmentName}>
-                                    {option.segmentName}
-                                </option>
-                            ))}
-                        </select>
-                        </div>
+
+                            <select
+                                id="segments"
+                                value={selectedSegmentValue}
+                                onChange={handleSegmentChange}
+                                className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
+                            >
+                                {/* Default option added */}
+                                <option value="0">Please select segment</option>
+
+                                {segments.map((option: any) => (
+                                    <option key={option.segmentId} value={option.segmentId}>
+                                        {option.segmentName}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Currency</label>
                             <select
-                                value={currency}
-                                onChange={handleSelectChange(onChangeCurrency)}
-                                className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
+                                value={selectedCurrency}
+                                onChange={(e) => setSelectedCurrency(e.target.value)}
+                                className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
                                 {currencies?.map((option: any) => (
                                     <option key={option} value={option}>
@@ -369,35 +390,33 @@ const NewCustomer: React.FC<Props> = ({
                                     </option>
                                 ))}
                             </select>
-                        </div>
 
-                        {/* spacer cell keeps alignment on desktop; hidden on small */}
-                        <div className={`${isMobile ? "hidden" : "block"}`} />
+                        </div>
 
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Price List Type</label>
                             <select
-                                value={priceListType}
-                                onChange={handleSelectChange(onChangePriceListType)}
-                                className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
+                                value={selectedPriceListType}
+                                onChange={(e) => setSelectedPriceListType(e.target.value)}
+                                className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
                                 {priceListTypes?.map((option: any) => (
-                                    <option key={option.Value} value={option.Text}>
+                                    <option key={option.Value} value={option.Value}>
                                         {option.Text}
                                     </option>
                                 ))}
                             </select>
-                        </div>
-                    </div>
 
-                    
+                        </div>
+
+                        <div className={`${isMobile ? "hidden" : "block"}`} />
+                    </div>
                 </div>
 
-                {/* Footer */}
                 <div className="px-4 py-3 bg-slate-50 flex justify-center gap-3">
                     <button
                         type="button"
-                        onClick={onBack}
+                        onClick={() => navigate('/pricingAccount')}
                         className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-150"
                     >
                         Back
