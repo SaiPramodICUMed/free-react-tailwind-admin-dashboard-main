@@ -90,12 +90,12 @@ export default function BasicTableTwo<T extends Record<string, any>>({
         style={{ maxHeight: tableHeight }}
       >
         <table className="min-w-full table-fixed">
-          <thead className="border-b border-gray-100 bg-blue-800 sticky top-0 z-30">
+          <thead className="border-b border-gray-100 bg-[#0065bd] sticky top-0 z-30">
             <tr>
               {/* ✅ Sticky Checkbox Header Fix */}
               <th
                 className="px-4 py-3 font-medium text-white text-start text-sm w-[40px] sticky left-0 z-40 bg-blue-800"
-                style={{ backgroundColor: "#1e40af" }} // same as bg-blue-800
+                style={{ backgroundColor: "#0065bd" }} // same as bg-blue-800
               >
                 <input
                   type="checkbox"
