@@ -66,7 +66,7 @@ export default function BasicTableOne<T extends Record<string, any>>({
       >
         <table className="min-w-full table-fixed">
           {data.length > 0 && (
-            <thead className="border-b border-gray-100 bg-blue-800 sticky top-0 z-10">
+            <thead className="border-b border-gray-100 bg-[#0065bd] sticky top-0 z-10">
               <tr>
                 {columns.map((col) => (
                   <th

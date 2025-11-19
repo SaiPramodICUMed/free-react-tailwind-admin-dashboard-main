@@ -93,7 +93,7 @@ export default function SmartFilterTable<T extends Record<string, any>>({
       <div className="max-w-full overflow-x-auto relative">
         <table className="min-w-full table-fixed text-sm">
           {/* HEADER */}
-          <thead className="border-b border-gray-100 bg-blue-800 text-white">
+          <thead className="border-b border-gray-100 bg-[#0065bd] text-white">
             <tr>
               {columns.map((col) => (
                 <th
