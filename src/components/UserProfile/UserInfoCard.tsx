@@ -1,10 +1,103 @@
 import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
+// import { Modal } from "../ui/modal";
+// import Button from "../ui/button/Button";
+// import Input from "../form/input/InputField";
+// import Label from "../form/Label";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function UserInfoCard() {
+  
+  const [selectedCultureId, setSelectedCultureId] = useState<number | null>(null);
+  const [language, setLanguage] = useState([]);
+  const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<number | null>(null);
+  const [currency, setCurrency] = useState([]);
+  const [numberFormat, setNumberFormat] = useState([]);
+  const [timezone, setTimezone] = useState([]);
+  const fetchLanguages = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Users/getLanguages`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Languages API Response:", response.data);
+      setLanguage(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchCurrencies = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Pricing/getCurrencies`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Currencies API Response:", response.data);
+      setCurrency(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchTimeZones = async () => {
+    try {
+      const response = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Users/GetTimeZones`,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Time zones API Response:", response.data);
+      setTimezone(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchNumberFormatting = async () => {
+    try {
+
+      const payload = {
+        viewName: `lkpNumberFormats`,
+        sortBy: "",
+        sortByDirection: "",
+        filter: ``,
+        fieldList: "*",
+        timeout: 0,
+      };
+
+      const response = await axios.post(
+        `https://vm-www-dprice01.icumed.com:5000/api/Metadata/getDataNoPaging`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("NumberFormatting API Response:", response.data);
+      setNumberFormat(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    fetchLanguages();
+    fetchCurrencies();
+    fetchNumberFormatting();
+    fetchTimeZones();
+  }, []);
+
+  const [selectedNumberFormat, setSelectedNumberFormat] = useState<number | null>(null);
+  const [selectedTimeZone, setSelectedTimeZone] = useState<number | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
   const handleSave = () => {
     // Handle save logic here
@@ -16,10 +109,73 @@ export default function UserInfoCard() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-            Personal Information
+            General
           </h4>
+          <div className="space-y-6">
+      <SettingRow label="Language:">
+        <select id="languages"
+          value={selectedCultureId ?? ""}
+          onChange={(e) => setSelectedCultureId(Number(e.target.value))}
+          className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+        >
+          {language.map((option: any) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
+        </select>
+      </SettingRow>
 
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+      <SettingRow label="Currency:">
+        <select id="currencies"
+              value={selectedCurrencyCode ?? ""}
+              onChange={(e) => setSelectedCurrencyCode(Number(e.target.value))}
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {currency.map((option: any) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+      </SettingRow>
+
+      <SettingRow label="Format:">
+        <select
+              id="numberformat"
+              value={selectedNumberFormat ?? ""}
+              onChange={(e) => setSelectedNumberFormat(Number(e.target.value))}
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {numberFormat.map((option: any) => (
+                <option key={option.FormatId} value={option.FormatId}>
+                  {option.Formatting}
+                </option>
+              ))}
+            </select>
+      </SettingRow>
+
+      <SettingRow label="TimeZone:">
+         <select
+              id="timezone"
+              value={selectedTimeZone ?? ""}
+              onChange={(e) => setSelectedTimeZone(e.target.value)}   // <--- STRING
+              className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none"
+            >
+              {timezone.map((option: any) => (
+                <option key={option.id} value={option.standardName}>
+                  {option.displayName}
+                </option>
+              ))}
+            </select>
+      </SettingRow>
+
+      {/* <div className="text-center">
+        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
+      </div> */}
+    </div>
+
+          {/* <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 First Name
@@ -43,7 +199,7 @@ export default function UserInfoCard() {
                 Email address
               </p>
               <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                randomuser@pimjo.com
+                randomuser@pimjo.comavd
               </p>
             </div>
 
@@ -64,11 +220,11 @@ export default function UserInfoCard() {
                 Team Manager
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <button
-          onClick={openModal}
+        //  onClick={openModal}
           className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
         >
           <svg
@@ -90,7 +246,7 @@ export default function UserInfoCard() {
         </button>
       </div>
 
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+      {/* <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
         <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
@@ -178,7 +334,25 @@ export default function UserInfoCard() {
             </div>
           </form>
         </div>
-      </Modal>
+      </Modal> */}
+    </div>
+  );
+}
+function SettingRow({ label, description, children }: any) {
+  return (
+    <div className="grid grid-cols-12 items-start gap-4">
+      {/* Label */}
+      <div className="col-span-3">
+        <p className="font-semibold text-gray-700 text-sm">{label}</p>
+      </div>
+
+      {/* Description (italic, muted) */}
+      <div className="col-span-7">
+        <p className="text-gray-600 italic text-sm">{description}</p>
+      </div>
+
+      {/* Control (right-aligned) */}
+      <div className="col-span-2 flex justify-end items-center text-sm">{children}</div>
     </div>
   );
 }

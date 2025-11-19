@@ -3,6 +3,7 @@ import UserMetaCard from "../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../components/UserProfile/UserAddressCard";
 import PageMeta from "../components/common/PageMeta";
+import UserAddressCard2 from "../components/UserProfile/UserAddressCard2";
 
 export default function UserProfiles() {
   return (
@@ -20,6 +21,7 @@ export default function UserProfiles() {
           <UserMetaCard />
           <UserInfoCard />
           <UserAddressCard />
+          <UserAddressCard2 />
         </div>
       </div>
     </>

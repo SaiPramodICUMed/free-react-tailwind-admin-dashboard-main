@@ -10,6 +10,7 @@ import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
 import { useNavigate } from "react-router";
 import { ChevronDown, ChevronUp } from "lucide-react";
+//import data from "../../data.json";
 
 export default function InProgress() {
   const user = useSelector((state: any) => state.user.users);
@@ -43,6 +44,10 @@ export default function InProgress() {
     { header: "Due", accessor: "Due" },
     { header: "Country", accessor: "CountryName" },
   ];
+
+  const handleViewDetails = (row:any) => {
+  console.log("Parent received:", row);
+};
 
   const fetchData = async (tab: string, start: number, end: number) => {
     setLoading(true);
@@ -160,7 +165,7 @@ export default function InProgress() {
         </div>
 
         {/* ✅ Table */}
-        <BasicTables page={"In Progress"} inboxData={inboxData} columns={columns} />
+        <BasicTables page={"In Progress"} inboxData={inboxData} columns={columns} checkBox={true} handleViewDetails={handleViewDetails} viewDetails={false}/>
 
         {/* ✅ Pagination */}
         {inboxData.length > 0 && (
