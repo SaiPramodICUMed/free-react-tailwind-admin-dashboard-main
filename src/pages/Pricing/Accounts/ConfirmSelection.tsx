@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 type ItemsSelection = "blank" | "advanced";
@@ -16,17 +16,12 @@ type Props = {
     onBack?: () => void;
     onConfirm?: () => void;
     onClose?: () => void;
-    // If you want it controlled, you can provide change handlers:
     onChangeDataPeriod?: (v: string) => void;
     onChangeTaskType?: (v: string) => void;
     onChangeCurrency?: (v: string) => void;
     onChangePriceListType?: (v: string) => void;
     onChangeItemsSelection?: (v: ItemsSelection) => void;
     className?: string;
-    /**
-     * Optional breakpoints override (in pixels). If not provided,
-     * component uses default mobile breakpoint of 760px.
-     */
     mobileBreakpoint?: number;
 };
 
@@ -48,19 +43,30 @@ const ConfirmSelection: React.FC<Props> = ({
     className,
     mobileBreakpoint = 760,
 }) => {
-    // responsive state based on window width (kept for optional logic if needed)
+
     const [isMobile, setIsMobile] = useState<boolean>(() => {
         if (typeof window === "undefined") return false;
         return window.innerWidth <= mobileBreakpoint;
     });
-    const user = useSelector((state: any) => state.user.users);
-    const [taskTypes, setTaskTypes] = useState([]);
-    const [currencies, setCurrencies] = useState([]);
-    const [priceListTypes, setPriceListTypes] = useState([]);
-    const [nextTaskNumber, setNextTaskNumber] = useState({});
-    const selected = useSelector((state: any) => state.user.selectedRecords);
-    const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
 
+    const user = useSelector((state: any) => state.user.users);
+    const [taskTypes, setTaskTypes] = useState<any[]>([]);
+    const [currencies, setCurrencies] = useState<string[]>([]);
+    const [priceListTypes, setPriceListTypes] = useState<any[]>([]);
+    const [nextTaskNumber, setNextTaskNumber] = useState<any>({});
+    const [newSegmentId, setNewSegmentId] = useState<any>({});
+    const [salesHistory, setSalesHistory] = useState<any[]>([]);
+    const selected = useSelector((state: any) => state.user.selectedRecords);
+    const [createTaskId, setCreateTaskId] = useState<any>({});
+    const selectedApprovals = useSelector((state: any) => state.user.userApprovals);
+    const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
+    const [localDataPeriod, setLocalDataPeriod] = useState<string | undefined>(dataPeriod);
+
+    // NOTE: selectedPriceListType is number OR empty string initially
+    const [selectedCurrency, setSelectedCurrency] = useState<string>(currency || "");
+    const [selectedPriceListType, setSelectedPriceListType] = useState<number | "">(priceListType ? Number(priceListType) : "");
+
+    // Resize handler
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= mobileBreakpoint);
         window.addEventListener("resize", handleResize);
@@ -78,77 +84,158 @@ const ConfirmSelection: React.FC<Props> = ({
         onChangeItemsSelection && onChangeItemsSelection(v);
     };
 
-
     const getTaskPrefix = (taskTypeId: number) => {
         switch (taskTypeId) {
-            case 1: return "P";   // Price List
-            case 2: return "Q";   // Quote/Offer
-            case 3: return "T";   // Tender
+            case 1: return "P";
+            case 2: return "Q";
+            case 3: return "T";
             case 4:
-            case 6: return "R";   // Renewal / Rate Revision
-            case 7: return "QP";  // Quote Off Price List
-            case 8: return "CH";  // Capital & Hardware
-            default: return "";   // fallback
+            case 6: return "R";
+            case 7: return "QP";
+            case 8: return "CH";
+            default: return "";
         }
     };
 
-
-    const fetchTaskType = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
+    const fetchNewTaskSegmentId = async () => {
         try {
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
+
             const payload = {
-                userId: user.userId
+                userId: user.userId,
+                countryId: selected[0].CountryID,
+                createTaskType: 2,
+                accountIds: hasAccount ? [selected[0].AccountId] : [],
+                siteIds: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: null
             };
 
-            // 👈 second argument is the body (data)
             const response = await axios.post(
-                `https://10.2.6.130:5000/api/Pricing/getTaskTypes`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetNewTaskSegmentId`,
+                payload
             );
 
-            console.log("Task Types API Response:", response.data);
-            setTaskTypes(response.data);
-            //setLoading(false);
+            setNewSegmentId(response.data);
             return response.data;
+
         } catch (error: any) {
-            console.error("Error fetching data:", error.message);
             return null;
         }
     };
 
-    const fetchNextTaskNumber = async (arg: any) => {
-        console.log('Taskname', arg);
-        //setLoading(true);
-        //setActiveTab(arg);
+    const fetchSalesHistoryMaxPeriod = async () => {
         try {
-            const payload =
-                arg
-                ;
-            console.log('Taskname Payload', payload);
-            // 👈 second argument is the body (data)
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
+
+            const payload = {
+                userId: user.userId,
+                countryId: selected[0].CountryID,
+                createTaskType: 2,
+                accounts: hasAccount ? [selected[0].AccountId] : [],
+                siteIds: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: null
+            };
+
             const response = await axios.post(
-                `https://10.2.6.130:5000/api/Pricing/GetNextTaskNumber`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetSalesHistoryMaxPeriod`,
+                payload
             );
 
-            console.log("NextTaskNumber API Response:", response.data);
-            setNextTaskNumber(response.data);
-            //setLoading(false);
+            setSalesHistory(response.data);
             return response.data;
+
         } catch (error: any) {
-            console.error("Error fetching data:", error.message);
+            return null;
+        }
+    };
+
+    const createTask = async () => {
+        try {
+
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
+
+            const payload = {
+                userId: user.userId,
+                historyStartDate: 365,
+                historyEndDate: 0,
+                salesHistoryMaxPeriod: salesHistory[0]?.maxPeriod,
+                countryId: selected[0].CountryID,
+                createTaskType: 3,
+                accounts: hasAccount ? [selected[0].AccountId] : [],
+                sites: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: null,
+                segmentId: newSegmentId.segmentId,
+                taskName: `${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`,
+                // ensure currencyCode uses selectedCurrency (string)
+                currencyCode: selectedCurrency || "",
+                taskTypeId: selectedTaskTypeId,
+                approvalId: selectedApprovals[0].id,
+                newCustomerName: "",
+                dataSource: 0,
+                sales: 0,
+                // ensure directIndirect is numeric (if blank, fallback to 0)
+                directIndirect: selectedPriceListType === "" ? 0 : Number(selectedPriceListType),
+                priceListExpiry: null,
+                priceChange: null,
+                baseURL: "",
+                specifiedItems: []
+            };
+
+            console.log("CreateTask Payload", payload);
+
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/AddTask`,
+                payload
+            );
+            console.log('Task Details', response.data);
+            setCreateTaskId(response.data);
+            return response.data;
+
+        } catch (error: any) {
+            console.error("createTask error", error);
+            return null;
+        }
+    };
+
+    const fetchTaskType = async () => {
+        try {
+            const payload = { userId: user.userId };
+            const response = await axios.post(
+                `https://10.2.6.130:5000/api/Pricing/getTaskTypes`,
+                payload
+            );
+            setTaskTypes(response.data);
+            return response.data;
+        } catch { return null; }
+    };
+
+    const fetchNextTaskNumber = async (arg: string) => {
+        try {
+            const response = await axios.post(
+                "https://10.2.6.130:5000/api/Pricing/GetNextTaskNumber",
+                JSON.stringify(arg),
+                {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                }
+            );
+
+            setNextTaskNumber(response.data);
+            return response.data;
+        } catch (error) {
+            console.error("NextTaskNumber ERROR:", error);
             return null;
         }
     };
 
     const fetchPriceListType = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
             const payload = {
                 viewName: `lkpDirectIndirect`,
@@ -159,56 +246,52 @@ const ConfirmSelection: React.FC<Props> = ({
                 timeout: 0,
             };
 
-            // 👈 second argument is the body (data)
             const response = await axios.post(
                 `https://10.2.6.130:5000/api/Metadata/getDataNoPaging`,
-                payload,
-                { headers: { "Content-Type": "application/json" } } // optional config
+                payload
             );
+            setPriceListTypes(response.data || []);
 
-            console.log("Price List Types API Response:", response.data);
-            setPriceListTypes(response.data);
-            //setLoading(false);
+            // set default numeric selection if not already set
+            if ((priceListType === "" || selectedPriceListType === "") && response.data && response.data.length > 0) {
+                const firstVal = response.data[0].Value;
+                setSelectedPriceListType(Number(firstVal));
+                // also notify parent if callback exists
+                onChangePriceListType && onChangePriceListType(Number(firstVal));
+            }
+
             return response.data;
         } catch (error: any) {
-            console.error("Error fetching data:", error.message);
             return null;
         }
     };
 
     const fetchCurrencies = async () => {
-        //console.log(arg, start, end);
-        //setLoading(true);
-        //setActiveTab(arg);
         try {
-
-            // 👈 second argument is the body (data)
             const response = await axios.get(
-                `https://10.2.6.130:5000/api/Pricing/getCurrencies`,
-
-                { headers: { "Content-Type": "application/json" } } // optional config
+                `https://10.2.6.130:5000/api/Pricing/getCurrencies`
             );
+            setCurrencies(response.data || []);
 
-            console.log("Currencies API Response:", response.data);
-            setCurrencies(response.data);
-            //setLoading(false);
+            // set default currency if not already set
+            if ((currency === "" || !selectedCurrency) && response.data && response.data.length > 0) {
+                setSelectedCurrency(response.data[0]);
+                onChangeCurrency && onChangeCurrency(response.data[0]);
+            }
+
             return response.data;
         } catch (error: any) {
-            console.error("Error fetching data:", error.message);
             return null;
         }
     };
+
     const navigate = useNavigate();
-    const save = () => {
-        //console.log("selectedRows",selectedRows);
-        //const selected = selectedRows.filter((row: any) => row.checked);
-        if (selected.length === 0) {
-            //alert("Please select at least one record");
-            navigate("/taskDetails");
-        } else {
-            console.log("selected", selected);
-            //dispatch(resetRecords(selected));
-            navigate("/taskDetails");
+    const save = async () => {
+        const response = await createTask();
+        if (response?.taskId > 0) navigate("/taskDetails");
+        else {
+            alert("Something went wrong! Please try again.");
+            navigate("/pricingAccount");
         }
     };
 
@@ -216,38 +299,30 @@ const ConfirmSelection: React.FC<Props> = ({
         fetchTaskType();
         fetchCurrencies();
         fetchPriceListType();
+        fetchNewTaskSegmentId();
+        fetchSalesHistoryMaxPeriod();
     }, []);
 
     useEffect(() => {
         fetchTaskType().then(data => {
-            if (data && data.length > 0) {
-                setSelectedTaskTypeId(data[0].id); // First item selected by default
-            }
+            if (data?.length > 0) setSelectedTaskTypeId(data[0].id);
         });
-
     }, []);
-    
+
     const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – ${selected[0].AccountNumber} – ${selected[0].AccountName}`;
     useEffect(() => {
         if (!selectedTaskTypeId || !selected?.length) return;
         fetchNextTaskNumber(baseTaskName);
     }, [selectedTaskTypeId, selected]);
 
-
-
-
     return (
         <div>
-            {/* Container */}
             <div>
-                {/* Header */}
+                <div className="px-6 py-3 min-h-[14rem]">
 
-
-                {/* Content */}
-                <div className="px-6 py-5 min-h-[14rem]">
                     {/* Task Name */}
-                    <div className={`flex ${isMobile ? "flex-col items-start gap-2" : "items-center"} mb-4`}>
-                        <label className={`font-semibold  ${isMobile ? "w-auto" : "w-[150px]"}`}>
+                    <div className={`flex ${isMobile ? "flex-col items-start gap-1" : "items-center"} mb-2`}>
+                        <label className={`font-semibold ${isMobile ? "w-auto" : "w-[150px]"}`}>
                             Task Name
                         </label>
                         <input
@@ -255,25 +330,37 @@ const ConfirmSelection: React.FC<Props> = ({
                             value={`${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`}
                             className="flex-1 max-w-[600px] w-full px-2 py-2 border border-gray-300 rounded-sm bg-white"
                         />
-
                     </div>
 
-                    {/* Options title */}
-                    <h3 className="text-base font-semibold  mb-3">Options</h3>
+                    {/* Options */}
+                    <h3 className="text-base font-semibold mb-2">Options</h3>
+                    <div className="border-b border-gray-300 mb-2"></div>
 
-                    {/* Options grid: 2 columns on md+, 1 column on small */}
-                    <div className={`grid gap-3 ${isMobile ? "grid-cols-1" : "grid-cols-2"} mb-4`}>
+                    <div className={`grid gap-2 ${isMobile ? "grid-cols-1" : "grid-cols-2"} mb-2`}>
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Data Period</label>
+
                             <select
-                                value={dataPeriod}
-                                onChange={handleSelectChange(onChangeDataPeriod)}
+                                value={localDataPeriod}
+                                onChange={(e) => {
+                                    setLocalDataPeriod(e.target.value);       // update locally
+                                    onChangeDataPeriod && onChangeDataPeriod(e.target.value); // update parent
+                                }}
                                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
-                                <option>1 year</option>
-                                <option>6 months</option>
-                                <option>2 years</option>
+                                <option value="1month">1 month</option>
+                                <option value="3months">3 months</option>
+                                <option value="6months">6 months</option>
+                                <option value="1year">1 year</option>
+                                <option value="2years">2 years</option>
+                                <option value="3years">3 years</option>
+                                <option value="4years">4 years</option>
+                                <option value="5years">5 years</option>
+                                <option value="6years">6 years</option>
+                                <option value="7years">7 years</option>
                             </select>
+
+
                             <div className="mt-1 text-sm text-slate-500">* 2.1 years of Data Available</div>
                         </div>
 
@@ -290,7 +377,6 @@ const ConfirmSelection: React.FC<Props> = ({
                                     </option>
                                 ))}
                             </select>
-
                         </div>
 
                         <div className="flex flex-col">
@@ -307,8 +393,11 @@ const ConfirmSelection: React.FC<Props> = ({
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Currency</label>
                             <select
-                                value={currency}
-                                onChange={handleSelectChange(onChangeCurrency)}
+                                value={selectedCurrency}
+                                onChange={(e) => {
+                                    setSelectedCurrency(e.target.value);
+                                    onChangeCurrency && onChangeCurrency(e.target.value);
+                                }}
                                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
                                 {currencies?.map((option: any) => (
@@ -317,31 +406,41 @@ const ConfirmSelection: React.FC<Props> = ({
                                     </option>
                                 ))}
                             </select>
+
+
+
                         </div>
 
-                        {/* spacer cell keeps alignment on desktop; hidden on small */}
                         <div className={`${isMobile ? "hidden" : "block"}`} />
 
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Price List Type</label>
                             <select
-                                value={priceListType}
-                                onChange={handleSelectChange(onChangePriceListType)}
+                                value={selectedPriceListType === "" ? "" : selectedPriceListType}
+                                onChange={(e) => {
+                                    const numericVal = Number(e.target.value);
+                                    setSelectedPriceListType(numericVal);
+                                    onChangePriceListType && onChangePriceListType(numericVal);
+                                }}
                                 className="w-64 md:w-64 max-w-full px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
                                 {priceListTypes?.map((option: any) => (
-                                    <option key={option.Value} value={option.Text}>
+                                    <option key={option.Value} value={option.Value}>
                                         {option.Text}
                                     </option>
                                 ))}
                             </select>
+
+
+
                         </div>
                     </div>
 
-                    {/* Items selection */}
-                    <h3 className="text-base font-semibold  mb-3">Items selection</h3>
+                    {/* Items Selection */}
+                    <h3 className="text-base font-semibold mb-2">Items selection</h3>
+                    <div className="border-b border-gray-300 mb-2"></div>
 
-                    <div className={`${isMobile ? "flex flex-col gap-2" : "flex items-center gap-4"} mb-2`}>
+                    <div className={`${isMobile ? "flex flex-col gap-1" : "flex items-center gap-2"} mb-1`}>
                         <label className="flex items-center gap-2">
                             <input
                                 type="radio"
@@ -352,12 +451,10 @@ const ConfirmSelection: React.FC<Props> = ({
                             />
                             <span className="text-sky-700">Blank</span>
                         </label>
-                        <div className="text-sky-700 text-sm">
-                            (Pick your items from SKU catalogue)
-                        </div>
+                        <div className="text-sky-700 text-sm">(Pick your items from SKU catalogue)</div>
                     </div>
 
-                    <div className={`${isMobile ? "flex flex-col gap-2" : "flex items-center gap-4"} mb-4`}>
+                    <div className={`${isMobile ? "flex flex-col gap-1" : "flex items-center gap-2"} mb-2`}>
                         <label className="flex items-center gap-2">
                             <input
                                 type="radio"
@@ -368,36 +465,39 @@ const ConfirmSelection: React.FC<Props> = ({
                             />
                             <span className="text-sky-700">Advanced</span>
                         </label>
-                        <div className="text-sky-700 text-sm">
-                            (Choose items by price list / contract)
-                        </div>
+                        <div className="text-sky-700 text-sm">(Choose items by price list / contract)</div>
                     </div>
 
                     {/* Summary */}
-                    <h3 className="text-base font-semibold  mb-3">Summary</h3>
+                    <h3 className="text-base font-semibold mb-2">Summary</h3>
+                    <div className="border-b border-gray-300 mb-2"></div>
+                    <div className={`flex ${isMobile ? "flex-col gap-3" : "items-center gap-4"}`}>
+                        <div className={`${isMobile ? "font-semibold" : "w-32 font-semibold"}`}>
+                            Customer(s)
+                        </div>
 
-                    <div className={`${isMobile ? "flex flex-col gap-2" : "flex items-center gap-4"}`}>
-                        <div className={`${isMobile ? "font-semibold" : "w-32 font-semibold"}`}>Customer(s)</div>
-                        <a className="text-sky-700 ">{selected[0].AccountName}</a>
+                        <a className="text-sky-700">{selected[0].AccountName}</a>
+
+                        {/* Buttons */}
+                        <div className={`flex gap-3 ${isMobile ? "mt-4" : "ml-auto"}`}>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/pricingAccount')}
+                                className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-150"
+                            >
+                                Back
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={save}
+                                className="bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-700 text-white px-4 py-1 rounded-md"
+                            >
+                                Confirm
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                {/* Footer */}
-                <div className="px-4 py-3 bg-slate-50 flex justify-center gap-3">
-                    <button
-                        type="button"
-                        onClick={onBack}
-                        className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-150"
-                    >
-                        Back
-                    </button>
-                    <button
-                        type="button"
-                        onClick={save}
-                        className="bg-gradient-to-b from-sky-400 to-sky-600 border border-sky-700 text-white px-4 py-1 rounded-md"
-                    >
-                        Confirm
-                    </button>
                 </div>
             </div>
         </div>

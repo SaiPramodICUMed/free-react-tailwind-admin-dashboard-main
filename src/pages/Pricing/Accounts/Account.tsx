@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../../../components/loader";
 import { useNavigate, Link } from "react-router-dom";
-import { resetRecords } from "../../../store/userSlice";
+import { resetRecords, userApprovalRecord } from "../../../store/userSlice";
 import Pagination from "../../../components/Pagination";
 
 export default function Account() {
@@ -20,9 +20,16 @@ export default function Account() {
   const [accountCount, setAccountCount] = useState(0);
   const [siteCount, setSiteCount] = useState(0);
   const [totalRecords, setTotalRecords] = useState(1);
+  const [userApprovals, setUserApprovals] = useState([]);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(resetRecords([]));   // Clear Redux
+    setSelectedRows([]);          // Clear component state
+}, []);
+
 
   const columns = [
     { header: "Account Name", accessor: "AccountName" },
@@ -68,6 +75,28 @@ export default function Account() {
     }
   };
 
+  const fetchUserApprovalRoles = async () => {
+    try {
+      const payload = {
+        userId: user.userId,
+        countryId: user.activeCountryId,
+        taskId: null
+      };
+
+      const response = await axios.post(
+        `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetUserApprovalRoles`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      setUserApprovals(response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching User Approval Roles:", error.message);
+      return null;
+    }
+  };
+
   const fetchAccountsCount = async () => {
     try {
       const payload = {
@@ -81,8 +110,7 @@ export default function Account() {
       );
       setTotalRecords(response.data.count);
       return response.data.count;
-    } catch (error: any) {
-      console.error("Error fetching account count:", error.message);
+    } catch {
       return 0;
     }
   };
@@ -99,19 +127,31 @@ export default function Account() {
         { headers: { "Content-Type": "application/json" } }
       );
       return response.data.count;
-    } catch (error: any) {
-      console.error("Error fetching site count:", error.message);
+    } catch {
       return 0;
     }
   };
 
   const selected = () => {
     const selected = selectedRows.filter((row: any) => row.checked);
+
+    if (userApprovals.length === 0 || userApprovals == null) {
+      alert("You don't have approval rights to create task!");
+      return;
+    }
+
+    dispatch(userApprovalRecord(userApprovals));
+
     if (selected.length === 0) {
       alert("Please select at least one record");
       return;
+    }
+
+    dispatch(resetRecords(selected));
+
+    if (selected.length > 1) {
+      navigate("/confirmSelectionMultiple");
     } else {
-      dispatch(resetRecords(selected));
       navigate("/confirmSelectionAccount");
     }
   };
@@ -135,7 +175,6 @@ export default function Account() {
     setPageChange(1, recordsPerPage);
   };
 
-  // 🔹 Animated counter logic
   const animateValue = (setter: any, start: number, end: number, duration: number) => {
     let startTime: number | null = null;
     const step = (timestamp: number) => {
@@ -148,7 +187,7 @@ export default function Account() {
     requestAnimationFrame(step);
   };
 
-  // ✅ Fetch counts first, then animate them
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -156,12 +195,14 @@ export default function Account() {
         fetchAccountsCount(),
         fetchSitesCount(),
       ]);
+
       setLoading(false);
 
       animateValue(setAccountCount, 0, accounts, 1200);
       animateValue(setSiteCount, 0, sites, 1200);
     };
 
+    fetchUserApprovalRoles();
     fetchData(1, user.gridPageSize);
     loadData();
   }, []);
@@ -169,6 +210,9 @@ export default function Account() {
   useEffect(() => {
     setTotalPages(Math.ceil(totalRecords / recordsPerPage));
   }, [recordsPerPage, totalRecords]);
+
+  // ✅ NEW: detect selected rows
+  const isAnyRowSelected = selectedRows.some((row: any) => row.checked);
 
   return (
     <>
@@ -184,16 +228,11 @@ export default function Account() {
         <span className="text-gray-500 font-medium">&nbsp;Accounts - Account</span>
       </nav>
 
-      <PageMeta
-        title="Pricing Tool"
-        description=""
-      />
+      <PageMeta title="Pricing Tool" description="" />
 
-      {/* 🔹 Tiles and buttons in one compact responsive row */}
+      {/* 🔹 Tiles + Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-        {/* Left - Tiles */}
         <div className="flex flex-wrap gap-4">
-          {/* Account Tile */}
           <Link
             to="../pricingAccount"
             className="flex items-center justify-center w-[160px] h-[80px] rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer"
@@ -206,7 +245,6 @@ export default function Account() {
             </div>
           </Link>
 
-          {/* Site Tile */}
           <Link
             to="../pricingSite"
             className="flex items-center justify-center w-[160px] h-[80px] rounded-xl border border-gray-200 bg-white shadow-sm hover:shadow-md hover:scale-[1.02] transition-all cursor-pointer"
@@ -220,24 +258,29 @@ export default function Account() {
           </Link>
         </div>
 
-        {/* Right - Buttons */}
+        {/* Right Buttons */}
         <div className="flex flex-wrap items-center gap-3">
+          {/* Create New Customer (always enabled) */}
           <button
             onClick={newCustomer}
-            className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors"
+            className="px-4 py-1.5 rounded bg-blue-600 text-white"
           >
             Create New Customer
           </button>
+
+          {/* Create + (enabled only if a row is selected) */}
           <button
             onClick={selected}
-            className="bg-blue-800 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow-sm transition-colors"
+            disabled={!isAnyRowSelected}
+            className={`px-4 py-1.5 rounded text-white 
+              ${isAnyRowSelected ? "bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`}
           >
             Create +
           </button>
         </div>
       </div>
 
-      {/* 🔹 Table section */}
+      {/* Table */}
       <div className="col-span-12">
         <BasicTables
           page={"Pricing - Account"}
@@ -248,7 +291,7 @@ export default function Account() {
         />
       </div>
 
-      {/* 🔹 Pagination */}
+      {/* Pagination */}
       <div className="col-span-12 mt-6">
         {inboxData.length > 0 && (
           <Pagination

@@ -68,6 +68,7 @@ const getUserDetails = async () => {
 
 useEffect(() => {
     dispatch(addUser({}));
+    console.log('user cleared');
   }, []);
 
   return (

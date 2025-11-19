@@ -53,7 +53,7 @@ const EditApprovalRoles: React.FC = () => {
         try {
             const payload = {
                 approvalName: newRole.name,
-                countryId: `${user.activeCountryId}`
+                countryId: `${iveCountryId}`
             };
             console.log('addnewrole', payload);
             // 👈 second argument is the body (data)
