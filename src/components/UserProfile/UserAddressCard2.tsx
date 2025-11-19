@@ -19,7 +19,7 @@ export default function UserAddressCard2() {
     <>
       <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-start">
-          <div className="lg:mr-55">
+          <div className="">
             <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
               Out of Office
             </h4>
@@ -86,7 +86,7 @@ export default function UserAddressCard2() {
                 fill=""
               />
             </svg>
-            save
+            Save
           </button>
         </div>
       </div>

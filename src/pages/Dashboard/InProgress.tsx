@@ -45,9 +45,7 @@ export default function InProgress() {
     { header: "Country", accessor: "CountryName" },
   ];
 
-  const handleViewDetails = (row:any) => {
-  console.log("Parent received:", row);
-};
+  
 
   const fetchData = async (tab: string, start: number, end: number) => {
     setLoading(true);
@@ -165,7 +163,7 @@ export default function InProgress() {
         </div>
 
         {/* ✅ Table */}
-        <BasicTables page={"In Progress"} inboxData={inboxData} columns={columns} checkBox={true} handleViewDetails={handleViewDetails} viewDetails={false}/>
+        <BasicTables page={"In Progress"} inboxData={inboxData} columns={columns} checkBox={true}/>
 
         {/* ✅ Pagination */}
         {inboxData.length > 0 && (

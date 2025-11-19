@@ -62,6 +62,11 @@ export default function GroupsData() {
     }
   };
 
+  const handleViewDetails = (row:any) => {
+  console.log("Parent received:", row);
+  getAccountDetails(row);
+};
+
   const fetchCount = async () => {
     setLoading(true);
     try {
@@ -122,17 +127,17 @@ export default function GroupsData() {
   // --------------------------------------
   // 🔥 Get Account Details Handler
   // --------------------------------------
-  const getAccountDetails = async () => {
-    const selected = selectedRows.filter((r: any) => r.checked);
+  const getAccountDetails = async (arg:any) => {
+    //const selected = selectedRows.filter((r: any) => r.checked);
 
-    if (selected.length === 0) {
-      alert("Please select at least one group");
-      return;
-    }
+    // if (selected.length === 0) {
+    //   alert("Please select at least one group");
+    //   return;
+    // }
 
-    const group = selected[0]; // take first selected row
-    const bgPartyId = group.BgPartyID;
-    const countryId = group.CountryId;
+    //const group = selected[0]; // take first selected row
+    const bgPartyId = arg.BgPartyID;
+    const countryId = arg.CountryId;
 
     try {
       setLoading(true);
@@ -170,7 +175,7 @@ export default function GroupsData() {
               className={`px-4 py-1.5 rounded text-white 
                 ${isAnyRowSelected ? "bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`}
             >
-              Get Account Details
+              Create +
             </button>
           </div>
         </div>
@@ -182,6 +187,7 @@ export default function GroupsData() {
             columns={columns}
             checkBox={true}
             setSelectedRows={setSelectedRows}
+             handleViewDetails={handleViewDetails} viewDetails={true}
           />
         </div>
 

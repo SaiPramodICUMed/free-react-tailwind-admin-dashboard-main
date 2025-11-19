@@ -107,6 +107,7 @@ export default function BasicTableOne<T extends Record<string, any>>({
                             "SegTargetPrice",
                             "LastYearSales",
                             "YRSalesTracing",
+                            "OriginalValue"
                           ].includes(col.accessor)
                         ? rawValue == null || rawValue === ""
                           ? 0

@@ -242,7 +242,7 @@ export default function UserInfoCard() {
               fill=""
             />
           </svg>
-          Edit
+          Save
         </button>
       </div>
 

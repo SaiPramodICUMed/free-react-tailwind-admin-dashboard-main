@@ -4,14 +4,14 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   columns = [],
   data = [],
   setSelected,
-  viewDetails = true, 
-  handleViewDetails, 
+  viewDetails = false,
+  handleViewDetails,
 }: {
   columns: any[];
   data: T[];
   setSelected?: React.Dispatch<React.SetStateAction<T[]>>;
   viewDetails?: boolean;
-   handleViewDetails?: (row: any) => void;
+  handleViewDetails?: (row: any) => void;
 }) {
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
@@ -58,6 +58,25 @@ export default function BasicTableTwo<T extends Record<string, any>>({
     setSelected?.(updated);
   };
 
+  const formatToDate = (isoString: string) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "";
+    return `${date.getDate().toString().padStart(2, "0")}/${(date.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}/${date.getFullYear()}`;
+  };
+
+  const getDaysFromToday = (dateString: string): string => {
+    if (!dateString) return "0 days";
+    const givenDate = new Date(dateString);
+    const today = new Date();
+    givenDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.floor((today.getTime() - givenDate.getTime()) / (1000 * 60 * 60 * 24));
+    return `- ${diffDays} days`;
+  };
+
   const allChecked = tableData.length > 0 && tableData.every((r) => r.checked);
   const someChecked = tableData.some((r) => r.checked);
 
@@ -88,12 +107,12 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
               </th>
-                {viewDetails && (
-  <th className="px-5 py-3 font-medium text-white text-start text-sm w-[120px]">
-    Actions
-  </th>
-  
-)}
+              {viewDetails && (
+                <th className="px-5 py-3 font-medium text-white text-start text-sm w-[120px]">
+                  Actions
+                </th>
+
+              )}
 
               {columns.map((col) => (
                 <th
@@ -103,8 +122,8 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                   {col.header}
                 </th>
               ))}
-            
-          </tr>
+
+            </tr>
           </thead>
 
           <tbody className="divide-y divide-gray-100 text-xs">
@@ -125,32 +144,61 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                       onChange={() => toggleCheckbox(rowIndex)}
                     />
                   </td>
-                   {viewDetails && (
-  <td className="px-4 py-3 w-[120px]">
-    <button
-      className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700"
-      onClick={() => handleViewDetails?.(row)}
-    >
-     Details
-    </button>
-  </td>
-)}
+                  {viewDetails && (
+                    <td className="px-4 py-3 w-[120px]">
+                      <button
+                        className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700"
+                        onClick={() => handleViewDetails?.(row)}
+                      >
+                        Details
+                      </button>
+                    </td>
+                  )}
 
                   {columns.map((col) => {
                     const cellValue = row[col.accessor] ?? "-";
+                    const rawValue =
+                      ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(
+                        col.accessor
+                      )
+                        ? formatToDate(cellValue)
+                        : [
+                          "GrossSales",
+                          "GM",
+                          "GMPerc",
+                          "YRSales",
+                          "GrossMargin",
+                          "GMPercent",
+                          "GrossASP",
+                          "GM_P",
+                          "ManagerMarginFloor",
+                          "SalesmanMarginFloor",
+                          "SegManagerFloor",
+                          "SegSalesmanFloor",
+                          "SegTargetPrice",
+                          "LastYearSales",
+                          "YRSalesTracing",
+                          "OriginalValue"
+                        ].includes(col.accessor)
+                          ? cellValue == null || cellValue === ""
+                            ? 0
+                            : Number(cellValue).toFixed(2)
+                          : col.accessor === "Due"
+                            ? getDaysFromToday(cellValue)
+                            : cellValue ?? "-";
                     return (
                       <td
                         key={`${rowIndex}-${col.accessor}`}
                         className="px-4 py-3 text-gray-700 text-start truncate w-[150px] max-w-[150px] cursor-help overflow-hidden text-ellipsis whitespace-nowrap relative"
-                        onClick={(e) => showTooltip(String(cellValue), e)}
-                        onMouseEnter={(e) => showTooltip(String(cellValue), e)}
+                        onClick={(e) => showTooltip(String(rawValue), e)}
+                        onMouseEnter={(e) => showTooltip(String(rawValue), e)}
                         onMouseLeave={hideTooltip}
                       >
-                        {String(cellValue)}
+                        {String(rawValue)}
                       </td>
                     );
                   })}
-                 
+
                 </tr>
               ))
             ) : (
