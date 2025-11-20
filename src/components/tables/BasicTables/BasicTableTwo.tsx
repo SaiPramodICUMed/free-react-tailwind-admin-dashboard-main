@@ -9,6 +9,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   handleViewDetails,
   handleCreate,
   createOption=false,
+  checkBox=false
 }: {
   columns: any[];
   data: T[];
@@ -17,6 +18,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   handleViewDetails?: (row: any) => void;
   handleCreate?: (row: any) => void;
   createOption?:boolean;
+  checkBox?:boolean;
 }) {
   const [tableData, setTableData] = useState(
     data.map((d) => ({ ...d, checked: d.checked ?? false }))
@@ -104,6 +106,7 @@ const user = useSelector((state: any) => state.user.users);
                 </th>
 
               )}
+              {checkBox && (
               <th
                 className="px-4 py-3 font-medium text-white text-start text-sm w-[40px] sticky left-0 z-40 bg-blue-800"
                 style={{ backgroundColor: "#0065bd" }} // same as bg-blue-800
@@ -117,7 +120,7 @@ const user = useSelector((state: any) => state.user.users);
                   }}
                   onChange={(e) => toggleAll(e.target.checked)}
                 />
-              </th>
+              </th>)}
               {viewDetails && (
                 <th className="px-5 py-3 font-medium text-white text-start text-sm w-[120px]">
                   Actions
@@ -152,6 +155,7 @@ const user = useSelector((state: any) => state.user.users);
                     </td>
                   )}
                   {/* ✅ Sticky Checkbox Column Fix */}
+                  {checkBox && (
                   <td
                     className="px-4 py-3 text-center w-[40px] sticky left-0 z-20 bg-white"
                     style={{
@@ -164,7 +168,7 @@ const user = useSelector((state: any) => state.user.users);
                       checked={row.checked}
                       onChange={() => toggleCheckbox(rowIndex)}
                     />
-                  </td>
+                  </td>)}
                   {viewDetails && (
                     <td className="px-4 py-3 w-[120px]">
                       <button
