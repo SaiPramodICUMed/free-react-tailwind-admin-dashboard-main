@@ -85,8 +85,15 @@ export default function BasicTableOne<T extends Record<string, any>>({
               data.map((row, rowIndex) => (
                 <tr key={row.TaskId ?? rowIndex} className="hover:bg-gray-50">
                   {columns.map((col) => {
+                    
                     const rawValue = row[col.accessor];
                     const cellValue =
+                      ["OriginalValue"].includes(
+                        col.accessor
+                      )
+                        ?  rawValue == null || rawValue === ""
+                          ? '$0.00'
+                          :`$${ Number(rawValue).toFixed(2)}`:
                       ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(
                         col.accessor
                       )
@@ -107,7 +114,7 @@ export default function BasicTableOne<T extends Record<string, any>>({
                             "SegTargetPrice",
                             "LastYearSales",
                             "YRSalesTracing",
-                            "OriginalValue"
+                            //"OriginalValue"
                           ].includes(col.accessor)
                         ? rawValue == null || rawValue === ""
                           ? 0
