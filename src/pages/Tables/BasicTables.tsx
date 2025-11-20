@@ -17,7 +17,6 @@ interface MyComponentProps {
   viewDetails?: boolean;
    handleCreate?:(row:any)=>void;
    createOption?:boolean;
-   //={handleCreate} createOption={true}
 }
 
 
@@ -34,8 +33,8 @@ export default function BasicTables({page,inboxData,columns,checkBox,setSelected
       {/* {selected.length} */}
       {/* <PageBreadcrumb pageTitle = {`${page} - Data`} /> */}
       <div className="space-y-6">       
-        {checkBox ? <BasicTableTwo columns={columns} data={inboxData} setSelected={setSelectedRows} viewDetails={viewDetails} handleViewDetails={handleViewDetails} handleCreate={handleCreate} createOption={createOption}/> :
-          <BasicTableOne columns={columns} data={inboxData} />}
+         <BasicTableTwo columns={columns} data={inboxData} setSelected={setSelectedRows} viewDetails={viewDetails} handleViewDetails={handleViewDetails} handleCreate={handleCreate} createOption={createOption} checkBox={checkBox}/> 
+          {/* // <BasicTableOne columns={columns} data={inboxData} /> */}
           {/* <BasicTableWithFIlter columns={columns} data={inboxData} /> */}
        
       </div>
