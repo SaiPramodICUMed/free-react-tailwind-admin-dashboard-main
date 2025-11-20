@@ -71,7 +71,6 @@ export default function GroupsData() {
     }
   };
 
-<<<<<<< HEAD
   const fetchUserApprovalRoles = async () => {
     try {
       const payload = {
@@ -245,12 +244,8 @@ const handleCreate = (row:any) => {
             columns={columns}
             checkBox={true}
             setSelectedRows={setSelectedRows}
-<<<<<<< HEAD
-            handleViewDetails={handleViewDetails} viewDetails={true}
-=======
              handleViewDetails={handleViewDetails} viewDetails={true}
              handleCreate={handleCreate} createOption={false}
->>>>>>> 046bd4b0decafdfdc3f2b2c1e584fc3ec6b591db
           />
         </div>
 
