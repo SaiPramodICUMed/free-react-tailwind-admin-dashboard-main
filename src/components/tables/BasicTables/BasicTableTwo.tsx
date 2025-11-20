@@ -178,6 +178,12 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                   {columns.map((col) => {
                     const cellValue = row[col.accessor] ?? "-";
                     const rawValue =
+                     ["OriginalValue"].includes(
+                        col.accessor
+                      )
+                        ?  cellValue == null || cellValue === ""
+                          ? '$ 0.00'
+                          :`$ ${ Number(cellValue).toFixed(2)}`:
                       ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(
                         col.accessor
                       )
