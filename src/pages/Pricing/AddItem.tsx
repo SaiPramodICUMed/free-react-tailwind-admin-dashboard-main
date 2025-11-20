@@ -231,9 +231,9 @@ const AddItem: React.FC = () => {
         <button className="px-3 py-1 border rounded">Back to Task</button>
 
         <div className="flex gap-3">
-          <button className="px-4 py-1.5 border rounded bg-gray-100 text-gray-700">
+          {/* <button className="px-4 py-1.5 border rounded bg-gray-100 text-gray-700">
             Add All Filtered SKUs ({totalRecords} in filter)
-          </button>
+          </button> */}
 
           <button
             className="px-4 py-1.5 rounded bg-blue-600 text-white"

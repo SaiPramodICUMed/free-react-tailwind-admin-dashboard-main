@@ -53,7 +53,7 @@ export default function Home() {
         firstRow: start,
         lastRow: end,
         sortBy: "DeadlineOrdered",
-        sortByDirection: "asc",
+        sortByDirection: "dsc",
         filter: `AND (1 <> 1 OR tab = '${tab}') AND tab = '${tab}'`,
         fieldList: "*",
         timeout: 0,

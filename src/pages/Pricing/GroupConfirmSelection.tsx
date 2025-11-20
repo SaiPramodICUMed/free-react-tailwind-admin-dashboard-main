@@ -89,9 +89,7 @@ const GroupConfirmSelection: React.FC<Props> = ({
 
     // ------------ MULTI-ACCOUNT TASK NAME ----------------
     const accountIds = selected.map((x: any) => x.AccountNumber);
-    const accountCount = selected.length;
-
-    const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – ${accountCount} Accounts – ${accountIds.join(", ")}`;
+    const accountCount = selected.length;   
 
 
     // ------------ API CALLS -------------
@@ -233,10 +231,10 @@ const GroupConfirmSelection: React.FC<Props> = ({
             salesHistoryMaxPeriod: salesHistory[0]?.maxPeriod,
             countryId: selected[0].CountryID,
             createTaskType: 3,
-            accounts: selected.map((x: any) => x.AccountId),
+            accounts: [],
             sites: [],
             priceLists: [],
-            groupId: null,
+            groupId: 603429,
             segmentId: newSegmentId.segmentId,
             taskName: `${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`,
             currencyCode: user.currencyCode,
@@ -258,8 +256,9 @@ const GroupConfirmSelection: React.FC<Props> = ({
         );
 
         if (response.data?.taskId > 0) navigate("/taskDetails");
-        else navigate("/pricingAccount");
+        else navigate("/groupsData");
     };
+    const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – ${selected[0].PartyNumber} – ${selected[0].GroupName}`;
 
 
 
@@ -275,7 +274,7 @@ const GroupConfirmSelection: React.FC<Props> = ({
 
                 <input
                     readOnly
-                    value={`${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`}
+                    value={`${baseTaskName}`}
                     className="flex-1 max-w-[600px] w-full px-2 py-2 border border-gray-300 rounded-sm bg-white"
                 />
             </div>
@@ -420,7 +419,7 @@ const GroupConfirmSelection: React.FC<Props> = ({
                     <button
                         type="button"
                         className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md"
-                        onClick={() => navigate('/pricingAccount')}
+                        onClick={() => navigate('/groupsData')}
                     >
                         Back
                     </button>
