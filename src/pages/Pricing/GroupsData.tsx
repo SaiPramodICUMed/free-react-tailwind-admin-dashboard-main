@@ -15,20 +15,19 @@ export default function GroupsData() {
   const [recordsPerPage, setRecordsPerPage] = useState(user.gridPageSize);
   const [totalRecords, setTotalRecords] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [selectedRows, setSelectedRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userApprovals, setUserApprovals] = useState([]);
 
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(resetRecords([]));   // Clear Redux
-    setSelectedRows([]);          // Clear component state
-  }, []);
-
-  // 🔥 Popup State
   const [showPopup, setShowPopup] = useState(false);
   const [groupAccounts, setGroupAccounts] = useState([]);
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  // CLEAR selected data when component loads
+  useEffect(() => {
+    dispatch(resetRecords([]));
+  }, []);
 
   const columns = [
     { header: "Group Name", accessor: "GroupName" },
@@ -39,9 +38,7 @@ export default function GroupsData() {
     { header: "Country", accessor: "CountryName" },
   ];
 
-  // --------------------------------------
   // Fetch Main Grid
-  // --------------------------------------
   const fetchData = async (start: number, end: number) => {
     setLoading(true);
     try {
@@ -63,45 +60,59 @@ export default function GroupsData() {
 
       setInboxData(response.data);
       setLoading(false);
-      return response.data;
-    } catch (error: any) {
-      console.error("Error fetching grid:", error.message);
+    } catch (err) {
+      console.error(err);
       setLoading(false);
-      return null;
     }
   };
 
-
+  // Fetch Approval Rights
   const fetchUserApprovalRoles = async () => {
     try {
       const payload = {
         userId: user.userId,
         countryId: user.activeCountryId,
-        taskId: null
+        taskId: null,
       };
-
+      console.log('approval payload',payload);
       const response = await axios.post(
         `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetUserApprovalRoles`,
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
-
+      console.log('user approvals', response.data);
       setUserApprovals(response.data);
-      return response.data;
-    } catch (error: any) {
-      console.error("Error fetching User Approval Roles:", error.message);
-      return null;
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleViewDetails = (row:any) => {
-  console.log("Parent received:", row);
-  getAccountDetails(row);
-};
-const handleCreate = (row:any) => {
-    console.log("Parent received:", row);
-}
+  // VIEW DETAILS for Popup
+  const handleViewDetails = (row: any) => {
+    getAccountDetails(row);
+  };
 
+  // ⭐ CREATE BUTTON inside each row
+  const handleCreate = (row: any) => {
+    console.log("Selected row for Create:", row);
+
+    // Check approval permission
+    // if (!userApprovals || userApprovals.length === 0) {
+    //   alert("You don't have approval rights to create task!");
+    //   return;
+    // }
+
+    // Store approval rights
+    dispatch(userApprovalRecord(userApprovals));
+
+    // Store selected row in redux
+    dispatch(resetRecords([row]));
+
+    // Redirect
+    navigate("/groupConfirmSelection");
+  };
+
+  // Fetch Count
   const fetchCount = async () => {
     setLoading(true);
     try {
@@ -117,37 +128,13 @@ const handleCreate = (row:any) => {
 
       setTotalRecords(response.data.count);
       setLoading(false);
-
-      return response.data;
-    } catch (error: any) {
-      console.error("Error fetching count:", error.message);
+    } catch (err) {
+      console.error(err);
       setLoading(false);
-      return null;
     }
   };
 
-  const selected = () => {
-    const selected = selectedRows.filter((row: any) => row.checked);
-    console.log('userApprovals', userApprovals);
-    if (userApprovals.length === 0 || userApprovals == null) {
-      alert("You don't have approval rights to create task!");
-      return;
-    }
-
-    dispatch(userApprovalRecord(userApprovals));
-
-    if (selected.length === 0) {
-      alert("Please select at least one record");
-      return;
-    }
-    console.log('selected row',selected);
-    dispatch(resetRecords(selected));
-
-    
-      navigate("/groupConfirmSelection");
-    
-  };
-
+  // Pagination
   const setPageChange = (pageNumber: number, perPage?: number) => {
     const size = perPage ? perPage : recordsPerPage;
     setCurrentPage(pageNumber);
@@ -174,41 +161,20 @@ const handleCreate = (row:any) => {
     fetchUserApprovalRoles();
   }, []);
 
-  useEffect(() => {
-    setSelectedRows([]);
-  }, []);
-
-  const navigate = useNavigate();
-
-  const isAnyRowSelected = selectedRows.some((r: any) => r.checked);
-
-  // --------------------------------------
-  // 🔥 Get Account Details Handler
-  // --------------------------------------
-  const getAccountDetails = async (arg: any) => {
-    //const selected = selectedRows.filter((r: any) => r.checked);
-
-    // if (selected.length === 0) {
-    //   alert("Please select at least one group");
-    //   return;
-    // }
-
-    //const group = selected[0]; // take first selected row
-    const bgPartyId = arg.BgPartyID;
-    const countryId = arg.CountryId;
-
+  // POPUP — GET GROUP ACCOUNTS
+  const getAccountDetails = async (row: any) => {
     try {
       setLoading(true);
 
-      const url = `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetGroupAccounts?bgPartyId=${bgPartyId}&countryId=${countryId}`;
+      const url = `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetGroupAccounts?bgPartyId=${row.BgPartyID}&countryId=${row.CountryId}`;
 
       const response = await axios.get(url);
-      console.log('res', response.data);
+
       setGroupAccounts(response.data);
       setShowPopup(true);
       setLoading(false);
     } catch (err) {
-      console.error("GetGroupAccounts ERROR", err);
+      console.error(err);
       setLoading(false);
     }
   };
@@ -217,39 +183,35 @@ const handleCreate = (row:any) => {
     <>
       <Loader isLoad={loading} />
 
-      {/* PAGE HEADER */}
+      {/* Header */}
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-        <span className="font-medium cursor-pointer" onClick={() => navigate('/pricingDashBoard')}>Pricing</span> /
+        <span
+          className="font-medium cursor-pointer"
+          onClick={() => navigate("/pricingDashBoard")}
+        >
+          Pricing
+        </span>
+        /
         <span className="text-gray-500 font-medium">&nbsp;Groups</span>
       </nav>
 
-      {/* BUTTON + TABLE */}
       <div className="grid grid-cols-6 gap-4 md:gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={selected}
-              disabled={!isAnyRowSelected}
-              className={`px-4 py-1.5 rounded text-white 
-                ${isAnyRowSelected ? "bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`}
-            >
-              Create +
-            </button>
-          </div>
-        </div>
 
+        {/* TABLE ONLY (Create+ Button removed!) */}
         <div className="col-span-12">
           <BasicTables
             page={"Pricing - Groups"}
             inboxData={inboxData}
             columns={columns}
-            checkBox={true}
-            setSelectedRows={setSelectedRows}
-             handleViewDetails={handleViewDetails} viewDetails={true}
-             handleCreate={handleCreate} createOption={false}
+            checkBox={false}
+            handleViewDetails={handleViewDetails}
+            viewDetails={true}
+            handleCreate={handleCreate}   // ⭐ NEW ROW-LEVEL CREATE
+            createOption={true}
           />
         </div>
 
+        {/* Pagination */}
         <div className="col-span-12 mt-8">
           {inboxData.length > 0 && (
             <Pagination
@@ -258,67 +220,45 @@ const handleCreate = (row:any) => {
               totalRecords={totalRecords}
               recordsPerPage={recordsPerPage}
               onPageChange={setPageChange}
-              onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
+              onRecordsPerPageChange={(v) => changeRecordsPerPage(v)}
             />
           )}
         </div>
       </div>
 
-      {/* --------------------------------------
-          🔥 POPUP MODAL — Group Account Details
-      ----------------------------------------- */}
+      {/* POPUP - Group Account Details */}
       {showPopup && (
-  <div className="fixed inset-0 bg-black/40 flex justify-center items-center !z-[999999]">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-[999999]">
+          <div className="bg-white rounded-xl shadow-2xl w-[750px] max-h-[80vh] overflow-hidden animate-[zoomIn_0.2s_ease]">
+            <div className="flex justify-between items-center px-5 py-4 bg-gray-200 border-b">
+              <h2 className="font-semibold text-lg text-gray-800">Group Accounts</h2>
+              <button className="text-gray-500 hover:text-gray-800" onClick={() => setShowPopup(false)}>✕</button>
+            </div>
 
-    <div className="bg-white rounded-xl shadow-2xl w-[750px] max-h-[80vh] overflow-hidden
-                    animate-[zoomIn_0.2s_ease]">
+            <div className="overflow-y-auto max-h-[65vh]">
+              <table className="w-full">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-2 border">Accounts</th>
+                    <th className="px-4 py-2 border">1 Yr Sales</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {groupAccounts.map((acc: any, i: number) => (
+                    <tr key={i} className={i % 2 ? "bg-gray-50" : "bg-white"}>
+                      <td className="px-4 py-2 border">{acc.accountName}</td>
+                      <td className="px-4 py-2 border">
+                        {acc.yrSales ? `$ ${acc.yrSales.toLocaleString()}` : "$ 0"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center px-5 py-4 
-                      bg-gradient-to-r from-slate-100 to-slate-200 border-b">
-        <h2 className="font-semibold text-lg text-gray-800">Group Accounts</h2>
-
-        <button
-          className="text-gray-500 hover:text-gray-800 transition"
-          onClick={() => setShowPopup(false)}
-        >
-          ✕
-        </button>
-      </div>
-
-      {/* TABLE */}
-      <div className="overflow-y-auto max-h-[65vh]">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-gray-100 text-gray-700 sticky top-0 shadow">
-            <tr>
-              <th className="px-4 py-2 border">Accounts</th>
-              <th className="px-4 py-2 border">1 Yr Sales (in Group)</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {groupAccounts.map((acc: any, idx: number) => (
-              <tr
-                key={idx}
-                className={`${
-                  idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                } hover:bg-blue-50/60 transition`}
-              >
-                <td className="px-4 py-2 border">{acc.accountName}</td>
-                <td className="px-4 py-2 border">
-                  {acc.yrSales ? `$ ${acc.yrSales.toLocaleString()}` : "$ 0"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-  </div>
-)}
-
-
+          </div>
+        </div>
+      )}
     </>
   );
 }

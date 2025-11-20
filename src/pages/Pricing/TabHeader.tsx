@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 
-const TabHeader: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("pricing");
+interface TabHeaderProps {
+  activeTab: string;
+  setActiveTab: (val: string) => void;
+}
 
+const TabHeader: React.FC<TabHeaderProps> = ({ activeTab, setActiveTab }) => {
   const tabs = [
     { id: "pricing", label: "Pricing" },
     { id: "details", label: "Details" },
@@ -12,7 +15,6 @@ const TabHeader: React.FC = () => {
   return (
     <div className="w-full bg-blue-100 border-b border-blue-300 rounded-t-lg shadow-sm">
       <div className="flex flex-wrap items-center justify-between px-4 sm:px-6 py-2">
-        {/* Tabs */}
         <div className="flex space-x-4 overflow-x-auto">
           {tabs.map((tab) => (
             <button

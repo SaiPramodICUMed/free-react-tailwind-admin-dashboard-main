@@ -150,7 +150,7 @@ const user = useSelector((state: any) => state.user.users);
                         className="bg-blue-600 text-white text-xs px-3 py-1 rounded hover:bg-blue-700"
                         onClick={() => handleCreate?.(row)}
                       >
-                        Details
+                        Create+
                       </button>
                     </td>
                   )}
