@@ -46,7 +46,7 @@ export default function All() {
         firstRow: start,
         lastRow: end,
         sortBy: "DeadlineOrdered",
-        sortByDirection: "asc",
+        sortByDirection: "desc",
         filter: `AND tab <> 'Inbox'`,
         fieldList: "*",
         timeout: 0,
