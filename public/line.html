@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexCharts Multiple Y-Axis Mixed Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f4f8ff;
+      color: #003366;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .chart-container {
+      background: #fff;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 3px 15px rgba(0, 0, 80, 0.1);
+      width: 90%;
+      max-width: 900px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #004b9b;
+      margin-bottom: 25px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-container">
+    <div id="chart"></div>
+  </div>
+
+  <script>
+    const options = {
+      series: [{
+        name: 'Income',
+        type: 'line',
+        data: [23, 11, 22, 27, 13, 22, 37, 21, 44, 22, 30]
+      }, {
+        name: 'Cashflow',
+        type: 'line',
+        data: [11, 32, 45, 32, 34, 52, 41, 35, 27, 43, 19]
+      }],
+      chart: {
+        height: 400,
+        type: 'line',
+        stacked: false
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        width: [3, 3]
+      },
+      title: {
+        text: 'Financial Performance Overview',
+        align: 'left',
+        style: {
+          color: '#003366'
+        }
+      },
+      xaxis: {
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'],
+        labels: {
+          style: {
+            colors: '#003366'
+          }
+        }
+      },
+     yaxis: {
+       axisBorder: { show: true },
+  labels: {
+    formatter: function (value) {
+      return value; // shows exactly the number
+    }
+  }
+},
+// yaxis: [
+//         {
+//           axisTicks: { show: true },
+//           axisBorder: { show: true, color: '#008FFB' },
+//           labels: { style: { colors: '#008FFB' } },
+//           title: { text: "Income (thousands)", style: { color: '#008FFB' } }
+//         },
+//         {
+//           opposite: true,
+//           axisTicks: { show: true },
+//           axisBorder: { show: true, color: '#00E396' },
+//           labels: { style: { colors: '#00E396' } },
+//           title: { text: "Cashflow (thousands)", style: { color: '#00E396' } }
+//         },
+//         {
+//           opposite: true,
+//           axisTicks: { show: true },
+//           axisBorder: { show: true, color: '#FEB019' },
+//           labels: { style: { colors: '#FEB019' } },
+//           title: { text: "Revenue (thousands)", style: { color: '#FEB019' } }
+//         }
+//       ],
+      tooltip: {
+        fixed: {
+          enabled: true,
+          position: 'topLeft',
+          offsetY: 30,
+          offsetX: 60
+        }
+      },
+      legend: {
+        horizontalAlign: 'left',
+        offsetX: 40
+      }
+    };
+
+    const chart = new ApexCharts(document.querySelector("#chart"), options);
+    chart.render();
+  </script>
+</body>
+</html>
