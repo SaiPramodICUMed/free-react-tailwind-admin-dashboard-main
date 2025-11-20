@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export default function BasicTableOne<T extends Record<string, any>>({
   columns = [],
@@ -25,7 +26,7 @@ export default function BasicTableOne<T extends Record<string, any>>({
     window.addEventListener("resize", updateTableHeight);
     return () => window.removeEventListener("resize", updateTableHeight);
   }, []);
-
+const user = useSelector((state: any) => state.user.users);
   const showTooltip = (text: string, e: React.MouseEvent) => {
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     setTooltip({ text, x: rect.left + rect.width / 2, y: rect.top - 8 });
@@ -93,7 +94,7 @@ export default function BasicTableOne<T extends Record<string, any>>({
                       )
                         ?  rawValue == null || rawValue === ""
                           ? '$0.00'
-                          :`$${ Number(rawValue).toFixed(2)}`:
+                          :`${user.currencyFormat} ${ Number(rawValue).toFixed(2)}`:
                       ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(
                         col.accessor
                       )

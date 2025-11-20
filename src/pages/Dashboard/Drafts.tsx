@@ -48,7 +48,7 @@ export default function Drafts() {
         firstRow: start,
         lastRow: end,
         sortBy: "Created",
-        sortByDirection: "asc",
+        sortByDirection: "desc",
         filter: `AND (1 <> 1 OR tab = '${tab}') AND tab = '${tab}'`,
         fieldList: "*",
         timeout: 0,

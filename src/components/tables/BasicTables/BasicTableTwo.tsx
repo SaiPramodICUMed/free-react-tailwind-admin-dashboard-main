@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 
 export default function BasicTableTwo<T extends Record<string, any>>({
   columns = [],
@@ -26,7 +27,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
   useEffect(() => {
     setTableData(data.map((d) => ({ ...d, checked: d.checked ?? false })));
   }, [data]);
-
+const user = useSelector((state: any) => state.user.users);
   const [tooltip, setTooltip] = useState<{ text: string; x: number; y: number } | null>(null);
   const [tableHeight, setTableHeight] = useState("60vh");
 
@@ -187,7 +188,7 @@ export default function BasicTableTwo<T extends Record<string, any>>({
                       )
                         ?  cellValue == null || cellValue === ""
                           ? '$ 0.00'
-                          :`$ ${ Number(cellValue).toFixed(2)}`:
+                          :`${user.currencyFormat} ${ Number(cellValue).toFixed(2)}`:
                       ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(
                         col.accessor
                       )
