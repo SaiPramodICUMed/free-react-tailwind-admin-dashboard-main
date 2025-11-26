@@ -143,7 +143,7 @@ const user = useSelector((state: any) => state.user.users);
           <tbody className="divide-y divide-gray-100 text-xs">
             {tableData.length > 0 ? (
               tableData.map((row, rowIndex) => (
-                <tr key={row.TaskId ?? rowIndex} className="hover:bg-gray-50">
+                <tr key={rowIndex} className="hover:bg-gray-50">
                   {createOption && (
                     <td className="px-4 py-3 w-[120px]">
                       <button

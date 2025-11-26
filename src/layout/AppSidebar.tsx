@@ -56,8 +56,8 @@ const navItems: NavItem[] = [
     icon: <PageIcon />,
     subItems: [
       { name: "All", path: "/emailAll", pro: false },
-      { name: "Unread", path: "/unread", pro: false },
-      { name: "Archived", path: "/archive", pro: false },
+      // { name: "Unread", path: "/unread", pro: false },
+      // { name: "Archived", path: "/archive", pro: false },
     ],
   },
   {

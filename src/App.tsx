@@ -41,9 +41,9 @@ import ApprovalControls from "./pages/Strategy/ApprovalControls";
 import Competitors from "./pages/Strategy/Competitors";
 import Promotions from "./pages/Strategy/Promotions";
 
-import EmailAll from "./pages/Email/All";
-import Archive from "./pages/Email/Archive";
-import Unread from "./pages/Email/Unread";
+import EmailAll from "./pages/Email/EmailAll";
+// import Archive from "./pages/Email/Archive";
+// import Unread from "./pages/Email/Unread";
 
 import Users from "./pages/Admin/Users";
 import Translation from "./pages/Admin/Translation";
@@ -109,7 +109,7 @@ export default function App() {
                 
                 <Route index path="/newCustomer" element={<NewCustomer />} />
                 <Route index path="/taskDetails" element={<TaskDetails />} />
-                <Route index path="/pricingTable" element={<PricingTable />} />
+                <Route index path="/pricingTable/:id" element={<PricingTable />} />
                 <Route index path="/addItem" element={<AddItem />} />
                 <Route index path="/awaitingLoad" element={<AwaitingLoad />} />
                 <Route index path="/manuallyUpdating" element={<ManuallyUpdating />} />
@@ -128,8 +128,8 @@ export default function App() {
                 <Route index path="/promotions" element={<Promotions />} />
 
                 <Route index path="/emailAll" element={<EmailAll />} />
-                <Route index path="/unread" element={<Unread />} />
-                <Route index path="/archive" element={<Archive />} />
+                {/* <Route index path="/unread" element={<Unread />} />
+                <Route index path="/archive" element={<Archive />} /> */}
 
                 <Route index path="/users" element={<Users />} />
                 <Route index path="/translation" element={<Translation />} />
@@ -144,6 +144,7 @@ export default function App() {
                 <Route index path="/currentCurrency" element={<CurrentCurrency />} />
                 <Route index path="/currencyHistory" element={<CurrencyHistory />} />
                 <Route index path="/updateCurrency" element={<UpdateCurrency /> } />
+
 
                 {/* Others Page */}
                 <Route path="/profile" element={<UserProfiles />} />
