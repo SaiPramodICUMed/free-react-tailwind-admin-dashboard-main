@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+
 type ItemsSelection = "blank" | "advanced";
 
 type Props = {
@@ -49,7 +50,6 @@ const NewCustomer: React.FC<Props> = ({
     });
 
     const user = useSelector((state: any) => state.user.users);
-    //const selected = useSelector((state: any) => state.user.selectedRecords);
     const selectedApprovals = useSelector((state: any) => state.user.userApprovals);
     const countries: [] = useSelector((state: any) => state.user.countries);
 
@@ -68,7 +68,6 @@ const NewCustomer: React.FC<Props> = ({
 
     const [selectedCurrency, setSelectedCurrency] = useState("");
     const [selectedPriceListType, setSelectedPriceListType] = useState("");
-
 
     const handleChange = (event: any) => {
         setSelectedValue(event.target.value);
@@ -214,6 +213,7 @@ const NewCustomer: React.FC<Props> = ({
 
     useEffect(fetchNextNumberWhenReady, [selectedTaskTypeId, newCustomerName]);
 
+    // Fetch all dropdown data
     useEffect(() => {
         fetchTaskType();
         fetchCurrencies();
@@ -222,6 +222,7 @@ const NewCustomer: React.FC<Props> = ({
         fetchNewTaskSegmentId();
     }, []);
 
+    // Set default Task Type (first item)
     useEffect(() => {
         fetchTaskType().then(data => {
             if (data && data.length > 0) {
@@ -230,12 +231,23 @@ const NewCustomer: React.FC<Props> = ({
         });
     }, []);
 
+    // ⭐ AUTO-SELECT FIRST CURRENCY IF USER DOES NOT CHANGE
+    useEffect(() => {
+        if (currencies.length > 0 && !selectedCurrency) {
+            setSelectedCurrency(currencies[0]);
+        }
+    }, [currencies]);
+
+    // ⭐ AUTO-SELECT FIRST PRICE LIST TYPE IF USER DOES NOT CHANGE
+    useEffect(() => {
+        if (priceListTypes.length > 0 && !selectedPriceListType) {
+            setSelectedPriceListType(String(priceListTypes[0].Value));
+        }
+    }, [priceListTypes]);
+
     const createTask = async () => {
         console.log("create task called");
         try {
-            console.log("user:", user);
-            //console.log("selected:", selected);
-            console.log("selectedApprovals:", selectedApprovals);
 
             const payload = {
                 userId: user?.userId,
@@ -250,19 +262,18 @@ const NewCustomer: React.FC<Props> = ({
                 groupId: null,
                 segmentId: selectedSegmentValue,
                 taskName: `${baseTaskName}`,
-                currencyCode: selectedCurrency,          // ✅ FIXED
+                currencyCode: selectedCurrency,          
                 taskTypeId: selectedTaskTypeId,
                 approvalId: selectedApprovals?.[0]?.id,
                 newCustomerName: newCustomerName,
                 dataSource: 0,
                 sales: 0,
-                directIndirect: Number(selectedPriceListType), // ✅ FIXED
+                directIndirect: Number(selectedPriceListType), 
                 priceListExpiry: null,
                 priceChange: null,
                 baseURL: "",
                 specifiedItems: []
             };
-
 
             console.log("new customer payload", payload);
 
@@ -289,7 +300,6 @@ const NewCustomer: React.FC<Props> = ({
             return;
         }
 
-        // ❗ VALIDATION FOR SEGMENT
         if (selectedSegmentValue === 0) {
             alert("Please select a Customer Segment.");
             return;
@@ -303,10 +313,6 @@ const NewCustomer: React.FC<Props> = ({
         const response = await createTask();
         console.log('res', response);
         if (response?.taskId > 0) navigate("/taskDetails");
-        else {
-            //alert("Something went wrong! Please try again.");
-            //navigate("/pricingAccount");
-        }
     };
 
     return (
@@ -359,16 +365,13 @@ const NewCustomer: React.FC<Props> = ({
 
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Customer Segment</label>
-
                             <select
                                 id="segments"
                                 value={selectedSegmentValue}
                                 onChange={handleSegmentChange}
                                 className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
-                                {/* Default option added */}
                                 <option value="0">Please select segment</option>
-
                                 {segments.map((option: any) => (
                                     <option key={option.segmentId} value={option.segmentId}>
                                         {option.segmentName}
@@ -377,6 +380,7 @@ const NewCustomer: React.FC<Props> = ({
                             </select>
                         </div>
 
+                        {/* CURRENCY DROPDOWN (FIXED) */}
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Currency</label>
                             <select
@@ -384,15 +388,16 @@ const NewCustomer: React.FC<Props> = ({
                                 onChange={(e) => setSelectedCurrency(e.target.value)}
                                 className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
+                                <option value="">Select currency</option>
                                 {currencies?.map((option: any) => (
                                     <option key={option} value={option}>
                                         {option}
                                     </option>
                                 ))}
                             </select>
-
                         </div>
 
+                        {/* PRICE LIST TYPE DROPDOWN (FIXED) */}
                         <div className="flex flex-col">
                             <label className="mb-1 font-semibold text-slate-800">Price List Type</label>
                             <select
@@ -400,13 +405,13 @@ const NewCustomer: React.FC<Props> = ({
                                 onChange={(e) => setSelectedPriceListType(e.target.value)}
                                 className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                             >
+                                <option value="">Select price list type</option>
                                 {priceListTypes?.map((option: any) => (
                                     <option key={option.Value} value={option.Value}>
                                         {option.Text}
                                     </option>
                                 ))}
                             </select>
-
                         </div>
 
                         <div className={`${isMobile ? "hidden" : "block"}`} />

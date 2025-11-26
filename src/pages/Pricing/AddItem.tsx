@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "axios"; 
 import React, { useEffect, useState } from "react";
 import Loader from "../../components/loader";
 import BasicTables from "../Tables/BasicTables";
@@ -139,9 +139,6 @@ const AddItem: React.FC = () => {
     fetchCount();
   }, []);
 
-  // -------------------------
-  // Reload data when filterMode changes
-  // -------------------------
   useEffect(() => {
     fetchData(1, user.gridPageSize);
     fetchCount();
@@ -156,18 +153,55 @@ const AddItem: React.FC = () => {
     setSelectedCount(count);
   }, [selectedRows]);
 
-
   // -------------------------
-  // Add selected SKUs
+  // ⭐ Add selected SKUs (Updated with API)
   // -------------------------
-  const selected = () => {
+  const selected = async () => {
     const selected = selectedRows.filter((row: any) => row.checked);
+
     if (selected.length === 0) {
       alert("Please select at least one record");
       return;
-    } else {
-      dispatch(resetRecords(selected));
-      navigate("/pricingTable");
+    }
+
+    // Build items array for API
+    const itemsPayload = selected.map((row: any) => ({
+      lotId: -1,
+      itemId: row.INVENTORY_ITEM_ID, // <- MUST be present in your row
+      taskItemId: null,
+    }));
+
+    const payload = {
+      taskId: taskId.taskId,
+      userId: user.userId,
+      items: itemsPayload,
+    };
+
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        `https://vm-www-dprice01.icumed.com:5000/api/Pricing/AddItemsToPriceList`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      setLoading(false);
+
+      if (response.data?.result === 1) {
+        // Save selected rows in store (unchanged)
+        dispatch(resetRecords(selected));
+
+        // Redirect after success
+        navigate(`/pricingTable/${taskId.taskId}`);
+      } else {
+        alert("Failed to add items. Please try again.");
+      }
+
+    } catch (error) {
+      setLoading(false);
+      console.error("API ERROR:", error);
+      alert("Error while adding items.");
     }
   };
 
@@ -175,12 +209,10 @@ const AddItem: React.FC = () => {
     <div className="w-full h-full p-3 bg-white text-sm">
       <Loader isLoad={loading} />
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-medium">Add Item</h2>
       </div>
 
-      {/* Filter Options */}
       <div className="flex items-center space-x-4 mb-2 text-gray-700">
         <span>Show:</span>
 
@@ -203,7 +235,6 @@ const AddItem: React.FC = () => {
         </label>
       </div>
 
-      {/* Table */}
       <BasicTables
         page={"In Progress"}
         inboxData={tableData}
@@ -212,36 +243,27 @@ const AddItem: React.FC = () => {
         setSelectedRows={setSelectedRows}
       />
 
-      {/* Pagination */}
-      <div>
-        {tableData.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalRecords={totalRecords}
-            recordsPerPage={recordsPerPage}
-            onPageChange={setPageChange}
-            onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
-          />
-        )}
-      </div>
+      {tableData.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          recordsPerPage={recordsPerPage}
+          onPageChange={setPageChange}
+          onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
+        />
+      )}
 
-      {/* Footer */}
       <div className="flex justify-between items-center mt-3">
         <button className="px-3 py-1 border rounded">Back to Task</button>
 
         <div className="flex gap-3">
-          {/* <button className="px-4 py-1.5 border rounded bg-gray-100 text-gray-700">
-            Add All Filtered SKUs ({totalRecords} in filter)
-          </button> */}
-
           <button
             className="px-4 py-1.5 rounded bg-blue-600 text-white"
             onClick={selected}
           >
             Add Selected SKUs ({selectedCount} selected)
           </button>
-
         </div>
       </div>
     </div>
