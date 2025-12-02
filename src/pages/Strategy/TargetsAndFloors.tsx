@@ -132,6 +132,10 @@ export default function TargetsAndFloors() {
     fetchCount(selectedValue);
   }, [selectedValue]);
 
+  const handleChange = (event: any) => {
+    setSelectedValue(event.target.value);
+  };
+
   return (
   <div className="bg-white p-6">
       <Loader isLoad={loading} />
@@ -151,13 +155,55 @@ export default function TargetsAndFloors() {
           <span className="text-gray-500 font-medium">&nbsp;Targets and Floors</span>
         </nav>
 
+        <div className=" top-0 right-0">          
+          <select id="fruit-select" value={selectedValue} onChange={handleChange}
+            className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none">
+            {countries?.map((option: any) => (
+              <option key={option.countryId} value={option.countryId}>
+                {option.countryName}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* <h2 className="text-xl font-semibold text-blue-700">User Details</h2> */}
 
       </div>
+
+
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
+         <div className=" top-0 right-0">          
+          <button className="bg-[#0f59ac] hover:bg-blue-500 text-white font-medium py-1 px-3 rounded text-sm mr-5" onClick={handleChange}>View History</button>
+          <button className={`font-medium py-1 px-5 rounded text-sm mr-5 bg-[#0f59ac] text-white`} onClick={ShowGPH}> {!isGPHVisible?"Show GPH":"Hide GPH"}</button>
+        </div>
+
+        <div className=" top-0 right-0">          
+          <select id="select-role" value={selectedValue} onChange={handleChange}
+            className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none">
+            {/* {countries?.map((option: any) => ( */}
+              <option key="all" value="all">
+                All
+              </option>
+              <option key="Salesmans" value="Salesmans">
+                Salesmans
+              </option>
+              <option key="Managers" value="Managers">
+                Managers
+              </option>
+            {/* ))} */}
+          </select>
+        </div>
+        {/* <h2 className="text-xl font-semibold text-blue-700">User Details</h2> */}
+        
+
+      </div>
+
+
+
       {/* Responsive Table inside the same container */}
       <div className="grid grid-cols-6 gap-4 md:gap-3">
         <div className="col-span-12">
-              <BasicTables page="Segmentation-Targets and Floors" inboxData={inboxData} columns={columns} />
+              <BasicTables page="Segmentation-Targets and Floors" inboxData={inboxData} columns={activeColumnList} />
             </div>  
             
      {/* Pagination */}

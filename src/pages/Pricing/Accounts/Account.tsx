@@ -11,7 +11,6 @@ import Pagination from "../../../components/Pagination";
 export default function Account() {
   const user = useSelector((state: any) => state.user.users);
 
-  // grid / counts / selection
   const [inboxData, setInboxData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
@@ -27,19 +26,14 @@ export default function Account() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(resetRecords([])); // Clear Redux
-    setSelectedRows([]); // Clear component state
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    dispatch(resetRecords([]));
+    setSelectedRows([]);
   }, []);
 
-  // -------------------------
-  // Filter metadata states
-  // -------------------------
   const [accountNames, setAccountNames] = useState<string[]>([]);
   const [accountNumbers, setAccountNumbers] = useState<string[]>([]);
   const [partyNumbers, setPartyNumbers] = useState<string[]>([]);
   const [segments, setSegments] = useState<{ value: any; label: string }[]>([]);
-
   const [types, setTypes] = useState<string[]>([]);
   const [parents, setParents] = useState<string[]>([]);
   const [salesChannels, setSalesChannels] = useState<string[]>([]);
@@ -48,13 +42,8 @@ export default function Account() {
   const [yrSalesRange, setYrSalesRange] = useState<any>({ minimum: 0, maximum: 0 });
   const [grossSalesRange, setGrossSalesRange] = useState<any>({ minimum: 0, maximum: 0 });
 
-  // filters state (SmartFilterTable will manage UI and call searchData)
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
 
-  // -------------------------
-  // Columns (kept same order)
-  // Add filterType/filterOptions on relevant columns so BasicTables -> SmartFilterTable shows filters
-  // -------------------------
   const columns = [
     { header: "Account Name", accessor: "AccountName", filterType: "autocomplete", filterOptions: accountNames },
     { header: "Account Number", accessor: "AccountNumber", filterType: "autocomplete", filterOptions: accountNumbers },
@@ -69,57 +58,39 @@ export default function Account() {
     { header: "Country", accessor: "CountryName", filterType: "multiSelect", filterOptions: countries },
   ];
 
-  // -------------------------
-  // Utility helpers
-  // -------------------------
   const escapeSql = (s: string) => (s == null ? "" : String(s).replace(/'/g, "''"));
 
-  // Build SQL Filter string from filters object (same style as InProgress)
-  // Expects keys equal to accessor names from columns. Also supports <field>_preset and <field> arrays for ranges
   const buildFilterStringFromObject = (obj: Record<string, any>) => {
     const clauses: string[] = [];
-    const base = ""; // we will always append the UserId clause at the end
+    const base = "";
 
     for (const rawKey of Object.keys(obj)) {
       const val = obj[rawKey];
       if (val === undefined || val === null || (typeof val === "string" && val.trim() === "")) continue;
 
       const key = rawKey;
-      const presetKey = `${key}_preset`;
 
-      // Handle date presets if any in future (not used here) - omitted for accounts
-
-      // Numeric ranges: arrays like [min, max]
       if (Array.isArray(val) && val.length === 2 && (typeof val[0] === "number" || typeof val[1] === "number")) {
         clauses.push(`(${key} >= ${Number(val[0])} AND ${key} <= ${Number(val[1])})`);
         continue;
       }
 
-      // Multi-select arrays of strings
-      // Multiselect for SegmentName (value = ID)
       if (key === "SegmentName" && Array.isArray(val) && val.length > 0) {
         const parts = val.map((v: any) => `SegmentID = ${v.value}`);
         clauses.push(`(${parts.join(" OR ")})`);
         continue;
       }
 
-
-      // Text / autocomplete (string)
       if (typeof val === "string") {
         clauses.push(`(${key} LIKE N'%${escapeSql(val)}%')`);
         continue;
       }
     }
 
-    // Always include user filter
     const combined = [base, ...(clauses.length ? clauses.map((c) => `AND ${c}`) : []), `AND UserId = ${user.userId}`].join(" ");
     return combined;
   };
 
-  // -------------------------
-  // DATA fetchers
-  // -------------------------
-  // fetch grid data (supports optional filterOverride)
   const fetchData = async (start: number, end: number, filterOverride?: string) => {
     setLoading(true);
     try {
@@ -139,7 +110,6 @@ export default function Account() {
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
-
       setInboxData(response.data);
       setLoading(false);
       return response.data;
@@ -150,7 +120,6 @@ export default function Account() {
     }
   };
 
-  // fetch total count for current filter
   const fetchTotalCount = async (sqlFilter: string) => {
     try {
       const payload = {
@@ -171,10 +140,6 @@ export default function Account() {
     }
   };
 
-  // -------------------------
-  // Suggestion / minmax loaders for filter UI
-  // (APIs you provided)
-  // -------------------------
   const suggestionApi = async (field: string, searchTerm = "", special = false) => {
     try {
       const url = special
@@ -187,9 +152,7 @@ export default function Account() {
         filter: `AND UserId = ${user.userId}`,
       };
 
-      // For single-field autocompletes, if searchTerm provided, plug into filter
       if (!special && searchTerm) {
-        // fieldName already set
         payload.filter = `AND ( ${field} LIKE N'%${escapeSql(searchTerm)}%' ) AND UserId = ${user.userId}`;
       }
 
@@ -205,21 +168,14 @@ export default function Account() {
   };
 
   const fetchFilterMetadata = async () => {
-    // load options and min/max
     try {
       setAccountNames(await suggestionApi("AccountName"));
       setAccountNumbers(await suggestionApi("AccountNumber"));
       setPartyNumbers(await suggestionApi("PartyNumber"));
-      // SegmentID, SegmentName is returned as pairs; you can display SegmentName in multiselect
-      // Load SegmentID + SegmentName properly for multiselect
+
       const seg = await suggestionApi("SegmentName");
-
       if (Array.isArray(seg)) {
-        const segNames = seg.map(
-          (s: any) => s.SegmentName ?? s.segmentname ?? String(s)
-        );
-
-        // Remove duplicates
+        const segNames = seg.map((s: any) => s.SegmentName ?? s.segmentname ?? String(s));
         setSegments(Array.from(new Set(segNames)));
       } else {
         setSegments([]);
@@ -238,18 +194,9 @@ export default function Account() {
     }
   };
 
-  // -------------------------
-  // searchData - called by SmartFilterTable (BasicTables)
-  // filtersObj shape = { AccountName: 'abc', SegmentName: ['A','B'], YRSales: [min,max], ... }
-  // -------------------------
   const onFiltersFromTable = (filtersObj: Record<string, any>) => {
-    // Save filters locally (optional)
     setFiltersState(filtersObj || {});
-
-    // Build SQL filter
     const sql = buildFilterStringFromObject(filtersObj || {});
-
-    // fetch count and first page
     fetchTotalCount(sql);
     fetchData(1, recordsPerPage, sql);
     setCurrentPage(1);
@@ -259,15 +206,11 @@ export default function Account() {
     onFiltersFromTable(filtersObj || {});
   };
 
-  // -------------------------
-  // Pagination handlers
-  // -------------------------
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const noOfrecordsPerPage = listPerPage ? listPerPage : recordsPerPage;
     setCurrentPage(pageNumber);
     const start = (pageNumber - 1) * noOfrecordsPerPage + 1;
     const end = pageNumber * noOfrecordsPerPage;
-    // Use current filtersState if any
     const sql = buildFilterStringFromObject(filtersState || {});
     fetchData(start, end, sql);
   };
@@ -280,14 +223,12 @@ export default function Account() {
     fetchData(1, size, sql);
   };
 
-  // -------------------------
-  // existing fetch helpers preserved
-  // -------------------------
-  const fetchUserApprovalRoles = async () => {
+  // -------------- FIXED FUNCTION: dynamic countryId added -----------------
+  const fetchUserApprovalRoles = async (countryId: number) => {
     try {
       const payload = {
         userId: user.userId,
-        countryId: user.activeCountryId,
+        countryId: countryId,  // 🔥 dynamic row CountryID
         taskId: null,
       };
 
@@ -304,6 +245,7 @@ export default function Account() {
       return null;
     }
   };
+  // ------------------------------------------------------------------------
 
   const fetchAccountsCount = async () => {
     try {
@@ -341,23 +283,37 @@ export default function Account() {
   };
 
   // -------------------------
-  // Actions (Create+, New Customer)
+  // Create + button (UPDATED WITH COUNTRYID)
   // -------------------------
-  const selected = () => {
+  const selected = async () => {
     const selectedItems = selectedRows.filter((row: any) => row.checked);
-
-    if (userApprovals.length === 0 || userApprovals == null) {
-      alert("You don't have approval rights to create task!");
-      return;
-    }
-
-    dispatch(userApprovalRecord(userApprovals));
 
     if (selectedItems.length === 0) {
       alert("Please select at least one record");
       return;
     }
 
+    // ---- NEW: Validate all selected rows are same CountryID ----
+    const countryIds = selectedItems.map((r: any) => r.CountryID);
+    const uniqueCountryIds = Array.from(new Set(countryIds));
+
+    if (uniqueCountryIds.length > 1) {
+      alert("Selected accounts belong to different countries. Please select accounts from the same country.");
+      return;
+    }
+
+    const selectedCountryId = uniqueCountryIds[0];
+    console.log("Using CountryID:", selectedCountryId);
+
+    // ---- NEW: Fetch approval roles based on selected row’s country ----
+    const approvals = await fetchUserApprovalRoles(selectedCountryId);
+
+    if (!approvals || approvals.length === 0) {
+      alert("You don't have approval rights for this country!");
+      return;
+    }
+
+    dispatch(userApprovalRecord(approvals));
     dispatch(resetRecords(selectedItems));
 
     if (selectedItems.length > 1) {
@@ -371,9 +327,6 @@ export default function Account() {
     navigate("/newCustomer");
   };
 
-  // -------------------------
-  // Animation helper for tiles (kept)
-  // -------------------------
   const animateValue = (setter: any, start: number, end: number, duration: number) => {
     let startTime: number | null = null;
     const step = (timestamp: number) => {
@@ -386,9 +339,6 @@ export default function Account() {
     requestAnimationFrame(step);
   };
 
-  // -------------------------
-  // Initial load
-  // -------------------------
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -399,27 +349,17 @@ export default function Account() {
       animateValue(setSiteCount, 0, sites, 1200);
     };
 
-    // existing
-    fetchUserApprovalRoles();
-    // initial grid (first page) - no filters
     fetchData(1, user.gridPageSize);
-    // counts + tiles
     loadData();
-    // load filter metadata
     fetchFilterMetadata();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     setTotalPages(Math.ceil(totalRecords / recordsPerPage));
   }, [recordsPerPage, totalRecords]);
 
-  // detect selected rows
   const isAnyRowSelected = selectedRows.some((row: any) => row.checked);
 
-  // -------------------------
-  // RENDER
-  // -------------------------
   return (
     <>
       <Loader isLoad={loading} />
@@ -433,7 +373,6 @@ export default function Account() {
 
       <PageMeta title="Pricing Tool" description="" />
 
-      {/* 🔹 Tiles + Buttons */}
       <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div className="flex flex-wrap gap-4">
           <Link
@@ -461,14 +400,11 @@ export default function Account() {
           </Link>
         </div>
 
-        {/* Right Buttons */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Create New Customer (always enabled) */}
           <button onClick={newCustomer} className="px-4 py-1.5 rounded bg-blue-600 text-white">
             Create New Customer
           </button>
 
-          {/* Create + (enabled only if a row is selected) */}
           <button
             onClick={selected}
             disabled={!isAnyRowSelected}
@@ -479,7 +415,6 @@ export default function Account() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="col-span-12">
         <BasicTables
           page={"Pricing - Account"}
@@ -487,12 +422,10 @@ export default function Account() {
           columns={columns}
           checkBox={true}
           setSelectedRows={setSelectedRows}
-          // SmartFilterTable will call searchData(filtersObj)
           searchData={searchData}
         />
       </div>
 
-      {/* Pagination */}
       <div className="col-span-12 mt-6">
         {inboxData.length > 0 && (
           <Pagination
@@ -501,9 +434,7 @@ export default function Account() {
             totalRecords={totalRecords}
             recordsPerPage={recordsPerPage}
             onPageChange={setPageChange}
-            onRecordsPerPageChange={(val) => {
-              changeRecordsPerPage(val);
-            }}
+            onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
           />
         )}
       </div>

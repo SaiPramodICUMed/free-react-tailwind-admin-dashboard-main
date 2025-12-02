@@ -40,6 +40,7 @@ import TargetsAndFloors from "./pages/Strategy/TargetsAndFloors";
 import ApprovalControls from "./pages/Strategy/ApprovalControls";
 import Competitors from "./pages/Strategy/Competitors";
 import Promotions from "./pages/Strategy/Promotions";
+import EditSegmentation from "./pages/Strategy/EditSegmentation";
 
 import EmailAll from "./pages/Email/EmailAll";
 // import Archive from "./pages/Email/Archive";
@@ -126,6 +127,7 @@ export default function App() {
                 <Route index path="/approvalControls" element={<ApprovalControls />} />
                 <Route index path="/competitors" element={<Competitors />} />
                 <Route index path="/promotions" element={<Promotions />} />
+                <Route index path="/editSegmentation" element={<EditSegmentation />} />
 
                 <Route index path="/emailAll" element={<EmailAll />} />
                 {/* <Route index path="/unread" element={<Unread />} />

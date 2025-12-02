@@ -21,18 +21,18 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   {
-    icon: <GridIcon />,
+    icon: <img src="/images/iconsnew/Inbox.png" className="w-5 h-5" />,
     name: "Inbox",
     path: "/home", // direct path instead of subItems
   },
   {
     name: "Pricing",
-    icon: <ListIcon />,
+    icon: <img src="/images/iconsnew/Pricing.png" className="w-5 h-5" />,
     path: "/pricingDashboard", // direct path instead of subItems
   },
   {
     name: "Reports",
-    icon: <TableIcon />,
+    icon: <img src="/images/iconsnew/Reports.png" className="w-5 h-5" />,
     subItems: [
       { name: "Advanced", path: "/advanced", pro: false },
       { name: "Basic Reports", path: "/basicReports", pro: false },
@@ -42,7 +42,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Strategy",
-    icon: <TableIcon />,
+    icon: <img src="/images/iconsnew/Strategy.png" className="w-5 h-5" />,
     subItems: [
       { name: "Segmentation", path: "/segmentation", pro: false },
       { name: "Targets and Floors", path: "/targetsAndFloors", pro: false },
@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Email",
-    icon: <PageIcon />,
+    icon: <img src="/images/iconsnew/email1.png" className="w-5 h-5" />,
     subItems: [
       { name: "All", path: "/emailAll", pro: false },
       // { name: "Unread", path: "/unread", pro: false },
@@ -62,7 +62,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Admin",
-    icon: <PageIcon />,
+    icon: <img src="/images/iconsnew/Admin.png" className="w-5 h-5" />,
     subItems: [
       { name: "Users", path: "/users", pro: false },
       { name: "Translation", path: "/translation", pro: false },
@@ -72,7 +72,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Import",
-    icon: <PageIcon />,
+    icon: <img src="/images/iconsnew/Import.png" className="w-5 h-5" />,
     subItems: [
       { name: "Currency", path: "/currency", pro: false },
       { name: "Targets and Floors", path: "/", pro: false },

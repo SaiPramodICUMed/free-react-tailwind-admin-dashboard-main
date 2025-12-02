@@ -5,9 +5,13 @@ import { Link, useNavigate } from "react-router-dom";
 import Loader from "../../components/loader";
 import BasicTables from "../Tables/BasicTables";
 import Pagination from "../../components/Pagination";
+import SimpleBarChart from "../../components/BarChart";
 
 export default function SegmentationGroup() {
   const user = useSelector((state: any) => state.user.users);
+  const countries: [] = useSelector((state: any) => state.user.countries);
+  const [summaryData, setSummaryData] = useState<any>({});
+  const [chartData, setChartData] = useState<any>([]);
   const [account, setAccount] = useState(0);
   const [groups, setGroups] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -125,6 +129,70 @@ export default function SegmentationGroup() {
     }
   };
 
+  const fetchSummaryData = async (country: number) => {
+    //console.log(arg);
+    setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        segmentType: 2,
+        userId: user.userId,
+        selectedCountryId: country,
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Strategy/getSummaryData`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Summary Data:", response.data[0]);
+      setSummaryData(response.data[0]);
+      setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+
+  const fetchChartData = async () => {
+    //console.log(arg);
+    setLoading(true);
+    //setActiveTab(arg);
+    try {
+      const payload = {
+        segmentType: 2,
+        valueType: 'gross',
+        userId: user.userId,
+        selectedCountryId: selectedValue,
+      };
+
+      // 👈 second argument is the body (data)
+      const response = await axios.post(
+        `https://10.2.6.130:5000/api/Strategy/getSummaryDataForSegments`,
+        payload,
+        { headers: { "Content-Type": "application/json" } } // optional config
+      );
+
+      console.log("Chart Data:", response.data);
+      setChartData(response.data);
+      setLoading(false);
+      return response.data;
+    } catch (error: any) {
+      console.error("Error fetching data:", error.message);
+      return null;
+    }
+  };
+  const handleChange = (event: any) => {
+    setSelectedValue(event.target.value);
+  };
+  useEffect(() => {
+    fetchSummaryData(user.activeCountryId);
+    fetchData(1, user.gridPageSize, user.activeCountryId);
+    fetchChartData();
+  }, []);
   // 🔹 Fetch initial data and animate
   useEffect(() => {
     const loadData = async () => {
@@ -166,10 +234,10 @@ export default function SegmentationGroup() {
   return (
     <div className="w-full">
       <Loader isLoad={loading} />
-<nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-          <span className="font-medium">Srategy</span> /
-          <span className="text-gray-500 font-medium">&nbsp;Groups</span>
-        </nav>
+      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
+        <span className="font-medium">Srategy</span> /
+        <span className="text-gray-500 font-medium">&nbsp;Groups</span>
+      </nav>
       {/* Clean animated tiles */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4 mb-6">
         {tiles.map((tile, index) => (
@@ -187,6 +255,70 @@ export default function SegmentationGroup() {
           </Link>
         ))}
       </div>
+
+      <div className="flex justify-end items-center gap-3 w-full mt-2">
+        <button className="bg-[#0f59ac] hover:bg-blue-600 text-white font-medium py-1 px-3 rounded text-sm mr-5" onClick={() => navigate("/editSegmentation")}>Edit Segmentation</button>
+        <select id="fruit-select" value={selectedValue} onChange={handleChange}
+          className="w-[200] border border-gray-300 rounded-md px-3 py-0 text-gray-700 bg-white focus:ring-2 focus:ring-gray-200 focus:outline-none">
+          {countries?.map((option: any) => (
+            <option key={option.countryId} value={option.countryId}>
+              {option.countryName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="bg-white border border-gray-300 rounded-xl px-4 md:px-4 w-full m-2 mt-5">
+        <h2 className="text-sm font-semibold mb-2">Summary</h2>
+
+        {/* Summary content */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
+          {/* Total Customers */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="font-semibold text-gray-800 whitespace-nowrap text-sm">
+              Total Customers:
+            </span>
+            <div className="bg-gray-100 px-4 py-2 rounded-md text-center min-w-[100px] text-sm">
+              {summaryData.customerCount}
+            </div>
+          </div>
+
+          {/* Gross Sales */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="font-semibold text-gray-800 whitespace-nowrap text-sm">
+              Gross Sales:
+            </span>
+            <div className="bg-gray-100 px-4 py-2 rounded-md text-center min-w-[120px] text-sm">
+              € {summaryData.grossSales?.toFixed(3)}
+            </div>
+          </div>
+
+          {/* GM */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="font-semibold text-gray-800 whitespace-nowrap text-sm">
+              GM:
+            </span>
+            <div className="bg-gray-100 px-4 py-2 rounded-md text-center min-w-[120px] text-sm">
+              € {summaryData.gm?.toFixed(3)}
+            </div>
+          </div>
+
+          {/* GM % */}
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="font-semibold text-gray-800 whitespace-nowrap text-sm">
+              GM %:
+            </span>
+            <div className="bg-gray-100 px-4 py-2 rounded-md text-center min-w-[80px] text-sm">
+              {summaryData.gmPerc?.toFixed(3)} %
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <SimpleBarChart data={chartData} />
+      </div>
+
 
       {/* Table Section */}
       <div className="col-span-12">
