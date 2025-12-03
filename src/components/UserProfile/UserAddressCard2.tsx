@@ -1,54 +1,212 @@
-import { useModal } from "../../hooks/useModal";
-// import { Modal } from "../ui/modal";
-// import Button from "../ui/button/Button";
-// import Input from "../form/input/InputField";
-// import Label from "../form/Label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { useSelector } from "react-redux";
 
 export default function UserAddressCard2() {
-  // const { isOpen, openModal, closeModal } = useModal();
-    const [coverUser, setCoverUser] = useState("None");
-    const [coverMessage, setCoverMessage] = useState("");
-    const [coverSetting, setCoverSetting] = useState("off");
-  // const handleSave = () => {
-  //   // Handle save logic here
-  //   console.log("Saving changes...");
-  //   closeModal();
-  // };
+  const user = useSelector((state: any) => state.user.users);
+  const userId = user?.userId;
+
+  const [loading, setLoading] = useState(true);
+  const [usersByCountry, setUsersByCountry] = useState({});
+  const [coverUsers, setCoverUsers] = useState({});
+  const [coverMessage, setCoverMessage] = useState("");
+  const [coverSetting, setCoverSetting] = useState("off"); // "off" | "on" | "auto"
+
+  /* ---------------------------------------------------------
+     LOAD UPPER-LEVEL USERS (same as before)
+  --------------------------------------------------------- */
+  const loadUpperLevelUsers = async () => {
+    try {
+      const res = await axios.get(
+        `https://vm-www-dprice01.icumed.com:5000/api/Login/GetUpperLevelUsers?userId=${userId}`
+      );
+
+      const data = res.data || [];
+      const grouped: any = {};
+
+      data.forEach((item: any) => {
+        if (!grouped[item.countryName]) grouped[item.countryName] = [];
+        grouped[item.countryName].push(item);
+      });
+
+      setUsersByCountry(grouped);
+
+      // Init dropdown values
+      const init: any = {};
+      Object.keys(grouped).forEach((country) => {
+        init[country] = "None";
+      });
+
+      setCoverUsers(init);
+    } catch (err) {
+      console.error("Error loading cover users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ---------------------------------------------------------
+     LOAD SAVED COVER USERS (API 2)
+  --------------------------------------------------------- */
+  const loadSavedCoverUsers = async () => {
+    const res = await axios.post(
+      "https://vm-www-dprice01.icumed.com:5000/api/Login/GetUserCoverUsers",
+      { userId }
+    );
+
+    const saved = res.data || [];
+
+    // Transform into { "Germany": userId, "USA": userId }
+    const mapping: any = {};
+
+    saved.forEach((c: any) => {
+      if (c.countryId === -1) return; // ignore dummy row
+      const country = Object.keys(usersByCountry).find(
+        (x) =>
+          usersByCountry[x].some(
+            (u: any) => u.countryId === c.countryId
+          )
+      );
+      if (country) {
+        mapping[country] = c.coverUserId > 0 ? c.coverUserId : "None";
+      }
+    });
+
+    setCoverUsers((prev: any) => ({ ...prev, ...mapping }));
+  };
+
+  /* ---------------------------------------------------------
+     LOAD ON PAGE OPEN
+  --------------------------------------------------------- */
+  useEffect(() => {
+    if (userId) {
+      loadUpperLevelUsers();
+    }
+  }, [userId]);
+
+  // Load saved cover users AFTER dropdowns are loaded
+  useEffect(() => {
+    if (Object.keys(usersByCountry).length > 0) {
+      loadSavedCoverUsers();
+    }
+  }, [usersByCountry]);
+
+  /* ---------------------------------------------------------
+     LOAD COVER MESSAGE + COVER MODE FROM REDUX
+  --------------------------------------------------------- */
+  useEffect(() => {
+    if (user) {
+      setCoverMessage(user.coverMessage ?? "");
+      setCoverSetting(
+        user.coverMode === 1 ? "on" : user.coverMode === 2 ? "auto" : "off"
+      );
+    }
+  }, [user]);
+
+  /* ---------------------------------------------------------
+     SAVE HANDLER
+  --------------------------------------------------------- */
+  const handleSave = async () => {
+    try {
+      // Convert UI "off|on|auto" → numeric mode
+      const modeValue = coverSetting === "on" ? 1 : coverSetting === "auto" ? 2 : 0;
+
+      // STEP 1 — Save cover message + mode
+      await axios.post(
+        "https://vm-www-dprice01.icumed.com:5000/api/Login/UpdateUserOutOfOfficeSettings",
+        {
+          userID: userId,
+          coverMessage: coverMessage,
+          coverMode: modeValue
+        }
+      );
+
+      // STEP 2 — Save each cover user (loop)
+      for (const country of Object.keys(usersByCountry)) {
+        const countryId = usersByCountry[country][0]?.countryId; // get countryId
+
+        await axios.post(
+          "https://vm-www-dprice01.icumed.com:5000/api/Login/SetUserCoverUser",
+          {
+            userId,
+            countryId,
+            coverUserId:
+              coverUsers[country] === "None" ? 0 : Number(coverUsers[country])
+          }
+        );
+      }
+
+      alert("Out of Office settings updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error saving settings");
+    }
+  };
+
+  if (loading) return <div className="p-6">Loading...</div>;
+
   return (
-    <>
-      <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800">
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-start">
-          <div className="">
-            <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-              Out of Office
-            </h4>
+    <div className="p-6 border border-gray-200 rounded-2xl dark:border-gray-700">
+      <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-6">
+        Out of Office
+      </h4>
 
-            <div className="space-y-6 w-full">
-              <SettingRow label="Cover User:">
-        <select
-          className="border rounded px-3 py-1 text-sm"
-          value={coverUser}
-          onChange={(e) => setCoverUser(e.target.value)}
-        >
-          <option>None</option>
-          <option>Manager</option>
-          <option>Assistant</option>
-        </select>
-      </SettingRow>
+      <div className="grid grid-cols-12 gap-y-8 w-full">
 
-      <SettingRow label="Cover Message:">
-        <textarea
-          className="border rounded px-3 py-2 w-[350px] h-28 text-sm"
-          value={coverMessage}
-          onChange={(e) => setCoverMessage(e.target.value)}
-        />
-      </SettingRow>
+        {/* COVER USER TITLE */}
+        <div className="col-span-3 font-semibold text-gray-700 text-sm pt-1">
+          Cover User:
+        </div>
 
-      <SettingRow label="Cover Setting:">
-        <div className="flex gap-6">
+        {/* COUNTRY + DROPDOWN */}
+        <div className="col-span-9 space-y-4">
+          {Object.keys(usersByCountry).map((country) => (
+            <div key={country} className="flex items-center gap-6">
+              <div className="w-32 text-gray-700">{country}</div>
+
+              <select
+                className="border rounded px-3 py-1 text-sm w-60"
+                value={coverUsers[country] ?? "None"}
+                onChange={(e) =>
+                  setCoverUsers((prev) => ({
+                    ...prev,
+                    [country]: e.target.value
+                  }))
+                }
+              >
+                <option value="None">None</option>
+
+                {usersByCountry[country].map((u: any) => (
+                  <option key={u.userId} value={u.userId}>
+                    {u.userName?.trim()} ({u.approvalName})
+                  </option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+
+        {/* COVER MESSAGE */}
+        <div className="col-span-3 font-semibold text-gray-700 text-sm">
+          Cover Message:
+        </div>
+
+        <div className="col-span-9">
+          <textarea
+            className="border rounded px-3 py-2 w-[350px] h-28 text-sm"
+            value={coverMessage}
+            onChange={(e) => setCoverMessage(e.target.value)}
+          />
+        </div>
+
+        {/* COVER SETTING */}
+        <div className="col-span-3 font-semibold text-gray-700 text-sm pt-1">
+          Cover Setting:
+        </div>
+
+        <div className="col-span-9 flex items-center gap-10 text-sm">
           {["off", "on", "auto"].map((option) => (
-            <label key={option} className="flex items-center gap-2 text-sm">
+            <label key={option} className="flex items-center gap-2">
               <input
                 type="radio"
                 checked={coverSetting === option}
@@ -58,102 +216,16 @@ export default function UserAddressCard2() {
             </label>
           ))}
         </div>
-      </SettingRow>
-
-      {/* <div className="text-center mt-10">
-        <button className="bg-blue-800 text-white px-5 py-2 rounded text-sm">Save</button>
-      </div> */}
-
-            </div>
-          </div>
-
-          <button
-          //  onClick={openModal}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 lg:inline-flex lg:w-auto"
-          >
-            <svg
-              className="fill-current"
-              width="18"
-              height="18"
-              viewBox="0 0 18 18"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M15.0911 2.78206C14.2125 1.90338 12.7878 1.90338 11.9092 2.78206L4.57524 10.116C4.26682 10.4244 4.0547 10.8158 3.96468 11.2426L3.31231 14.3352C3.25997 14.5833 3.33653 14.841 3.51583 15.0203C3.69512 15.1996 3.95286 15.2761 4.20096 15.2238L7.29355 14.5714C7.72031 14.4814 8.11172 14.2693 8.42013 13.9609L15.7541 6.62695C16.6327 5.74827 16.6327 4.32365 15.7541 3.44497L15.0911 2.78206ZM12.9698 3.84272C13.2627 3.54982 13.7376 3.54982 14.0305 3.84272L14.6934 4.50563C14.9863 4.79852 14.9863 5.2734 14.6934 5.56629L14.044 6.21573L12.3204 4.49215L12.9698 3.84272ZM11.2597 5.55281L5.6359 11.1766C5.53309 11.2794 5.46238 11.4099 5.43238 11.5522L5.01758 13.5185L6.98394 13.1037C7.1262 13.0737 7.25666 13.003 7.35947 12.9002L12.9833 7.27639L11.2597 5.55281Z"
-                fill=""
-              />
-            </svg>
-            Save
-          </button>
-        </div>
-      </div>
-      {/* <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-3xl dark:bg-gray-900 lg:p-11">
-          <div className="px-2 pr-14">
-            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-              Edit Address
-            </h4>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
-            </p>
-          </div>
-          <form className="flex flex-col">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
-              <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-                <div>
-                  <Label>Country</Label>
-                  <Input type="text" value="United States" />
-                </div>
-
-                <div>
-                  <Label>City/State</Label>
-                  <Input type="text" value="Arizona, United States." />
-                </div>
-
-                <div>
-                  <Label>Postal Code</Label>
-                  <Input type="text" value="ERT 2489" />
-                </div>
-
-                <div>
-                  <Label>TAX ID</Label>
-                  <Input type="text" value="AS4568384" />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 px-2 mt-6 lg:justify-end">
-              <Button size="sm" variant="outline" onClick={closeModal}>
-                Close
-              </Button>
-              <Button size="sm" onClick={handleSave}>
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Modal> */}
-    </>
-  );
-}
-
-function SettingRow({ label, description, children }: any) {
-  return (
-    <div className="grid grid-cols-12 items-start gap-4">
-      {/* Label */}
-      <div className="col-span-3">
-        <p className="font-semibold text-gray-700 text-sm">{label}</p>
       </div>
 
-      {/* Description (italic, muted) */}
-      <div className="col-span-7">
-        <p className="text-gray-600 italic text-sm">{description}</p>
+      <div className="mt-8">
+        <button
+          onClick={handleSave}
+          className="bg-blue-600 text-white px-6 py-2 rounded text-sm hover:bg-blue-700"
+        >
+          Save
+        </button>
       </div>
-
-      {/* Control (right-aligned) */}
-      <div className="col-span-2 flex justify-end items-center text-sm">{children}</div>
     </div>
   );
 }
