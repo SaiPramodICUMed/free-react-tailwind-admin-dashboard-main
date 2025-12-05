@@ -17,7 +17,7 @@ const TaskDetails: React.FC = () => {
   nextYear.setFullYear(today.getFullYear() + 1);
 
   const [validUntil, setValidUntil] = useState("duration");
-  const [validUntilDuration, setValidUntilDuration] = useState("1month");
+  const [validUntilDuration, setValidUntilDuration] = useState("1year");
   const [validUntilDate, setValidUntilDate] = useState<Date | null>(nextYear);
   const user = useSelector((state: any) => state.user.users);
   const taskId = useSelector((state: any) => state.user.taskDetails);
@@ -294,13 +294,13 @@ const TaskDetails: React.FC = () => {
 
       {/* SAVE BUTTON */}
       <div className="flex justify-center mt-6">
-        <button
+        {/* <button
           type="button"
           onClick={() => navigate('/pricingAccount')}
           className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-150"
         >
           Back
-        </button>
+        </button> */}
         <button
           type="button"
           onClick={handleSave}

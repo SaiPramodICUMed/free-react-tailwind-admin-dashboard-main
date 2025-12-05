@@ -38,7 +38,8 @@ export default function Account() {
   const [parents, setParents] = useState<string[]>([]);
   const [salesChannels, setSalesChannels] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
-  const [countries, setCountries] = useState<string[]>([]);
+  const [countries, setCountries] = useState<{ value: any; label: string }[]>([]);
+
   const [yrSalesRange, setYrSalesRange] = useState<any>({ minimum: 0, maximum: 0 });
   const [grossSalesRange, setGrossSalesRange] = useState<any>({ minimum: 0, maximum: 0 });
 
@@ -61,35 +62,57 @@ export default function Account() {
   const escapeSql = (s: string) => (s == null ? "" : String(s).replace(/'/g, "''"));
 
   const buildFilterStringFromObject = (obj: Record<string, any>) => {
-    const clauses: string[] = [];
-    const base = "";
+  const clauses: string[] = [];
+  const base = "";
 
-    for (const rawKey of Object.keys(obj)) {
-      const val = obj[rawKey];
-      if (val === undefined || val === null || (typeof val === "string" && val.trim() === "")) continue;
+  for (const rawKey of Object.keys(obj)) {
+    const val = obj[rawKey];
+    if (!val || (typeof val === "string" && val.trim() === "")) continue;
 
-      const key = rawKey;
+    const key = rawKey;
 
-      if (Array.isArray(val) && val.length === 2 && (typeof val[0] === "number" || typeof val[1] === "number")) {
-        clauses.push(`(${key} >= ${Number(val[0])} AND ${key} <= ${Number(val[1])})`);
-        continue;
-      }
-
-      if (key === "SegmentName" && Array.isArray(val) && val.length > 0) {
-        const parts = val.map((v: any) => `SegmentID = ${v.value}`);
-        clauses.push(`(${parts.join(" OR ")})`);
-        continue;
-      }
-
-      if (typeof val === "string") {
-        clauses.push(`(${key} LIKE N'%${escapeSql(val)}%')`);
-        continue;
-      }
+    // ✅ RANGE FILTER
+    if (
+      Array.isArray(val) &&
+      val.length === 2 &&
+      (typeof val[0] === "number" || typeof val[1] === "number")
+    ) {
+      clauses.push(`(${key} >= ${Number(val[0])} AND ${key} <= ${Number(val[1])})`);
+      continue;
     }
 
-    const combined = [base, ...(clauses.length ? clauses.map((c) => `AND ${c}`) : []), `AND UserId = ${user.userId}`].join(" ");
-    return combined;
-  };
+    // ✅ SEGMENT MULTISELECT
+    if (key === "SegmentName" && Array.isArray(val) && val.length > 0) {
+      const parts = val.map((v: any) => `SegmentID = ${v.value}`);
+      clauses.push(`(${parts.join(" OR ")})`);
+      continue;
+    }
+
+    // ✅ ✅ ✅ COUNTRY MULTISELECT  ← THIS WAS MISSING
+    if (key === "CountryName" && Array.isArray(val) && val.length > 0) {
+      const parts = val.map(
+        (v: any) => `CountryName = N'${escapeSql(v.value)}'`
+      );
+      clauses.push(`(${parts.join(" OR ")})`);
+      continue;
+    }
+
+    // ✅ NORMAL STRING FILTER
+    if (typeof val === "string") {
+      clauses.push(`(${key} LIKE N'%${escapeSql(val)}%')`);
+      continue;
+    }
+  }
+
+  const combined = [
+    base,
+    ...(clauses.length ? clauses.map((c) => `AND ${c}`) : []),
+    `AND UserId = ${user.userId}`,
+  ].join(" ");
+
+  return combined;
+};
+
 
   const fetchData = async (start: number, end: number, filterOverride?: string) => {
     setLoading(true);
@@ -173,19 +196,49 @@ export default function Account() {
       setAccountNumbers(await suggestionApi("AccountNumber"));
       setPartyNumbers(await suggestionApi("PartyNumber"));
 
-      const seg = await suggestionApi("SegmentName");
-      if (Array.isArray(seg)) {
-        const segNames = seg.map((s: any) => s.SegmentName ?? s.segmentname ?? String(s));
-        setSegments(Array.from(new Set(segNames)));
-      } else {
-        setSegments([]);
-      }
+     const seg = await axios.post(
+  "https://vm-www-dprice01.icumed.com:5000/api/Suggestion/get",
+  {
+    viewName: "vw_Accounts",
+    fieldName: "SegmentId, SegmentName",
+    filter: `AND UserId = ${user.userId}`,
+  },
+  { headers: { "Content-Type": "application/json" } }
+);
+
+if (Array.isArray(seg.data)) {
+  const mappedSegments = seg.data
+    .filter((s: any) => s.id && s.name) // remove nulls
+    .map((s: any) => ({
+      value: Number(s.id),   // ✅ used for SQL filter
+      label: s.name.trim(),  // ✅ shown in UI
+    }));
+
+  setSegments(mappedSegments);
+} else {
+  setSegments([]);
+}
 
       setTypes(await suggestionApi("Type"));
       setParents(await suggestionApi("ParentCompany"));
       setSalesChannels(await suggestionApi("SalesChannelCode"));
       setCities(await suggestionApi("City"));
-      setCountries(await suggestionApi("CountryName"));
+      const countryRes = await suggestionApi("CountryName");
+
+if (Array.isArray(countryRes)) {
+  const mappedCountries = countryRes
+    .filter((c: any) => c?.id)   // ✅ safety
+    .map((c: any) => ({
+      value: c.id,              // ✅ Belgium, Germany, etc.
+      label: c.id,              // ✅ DISPLAY from id (since name is null)
+    }));
+
+  setCountries(mappedCountries);
+} else {
+  setCountries([]);
+}
+
+
 
       setYrSalesRange(await suggestionApi("YRSales", "", true));
       setGrossSalesRange(await suggestionApi("GrossSalesTracing", "", true));

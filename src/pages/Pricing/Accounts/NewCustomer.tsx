@@ -68,6 +68,7 @@ const NewCustomer: React.FC<Props> = ({
 
     const [selectedCurrency, setSelectedCurrency] = useState("");
     const [selectedPriceListType, setSelectedPriceListType] = useState("");
+    
 
     const handleChange = (event: any) => {
         setSelectedValue(event.target.value);
@@ -190,19 +191,29 @@ const NewCustomer: React.FC<Props> = ({
         }
     };
 
-    const fetchCurrencies = async () => {
-        try {
-            const response = await axios.get(
-                `https://10.2.6.130:5000/api/Pricing/getCurrencies`,
-                { headers: { "Content-Type": "application/json" } }
-            );
+   const fetchCurrencies = async () => {
+    try {
+        const response = await axios.get(
+            `https://10.2.6.130:5000/api/Pricing/getCurrencies`,
+            { headers: { "Content-Type": "application/json" } }
+        );
 
-            setCurrencies(response.data);
-            return response.data;
-        } catch {
-            return null;
+        const list = response.data || [];
+        setCurrencies(list);
+
+        // ✅ DEFAULT FROM REDUX (NOT FIRST ITEM)
+        if (user?.currencyCode && list.includes(user.currencyCode)) {
+            setSelectedCurrency(user.currencyCode);
+            onChangeCurrency && onChangeCurrency(user.currencyCode);
         }
-    };
+
+        return list;
+    } catch {
+        return null;
+    }
+};
+
+
 
     const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – New Customer – ${newCustomerName || ""}`;
 
@@ -232,11 +243,7 @@ const NewCustomer: React.FC<Props> = ({
     }, []);
 
     // ⭐ AUTO-SELECT FIRST CURRENCY IF USER DOES NOT CHANGE
-    useEffect(() => {
-        if (currencies.length > 0 && !selectedCurrency) {
-            setSelectedCurrency(currencies[0]);
-        }
-    }, [currencies]);
+    
 
     // ⭐ AUTO-SELECT FIRST PRICE LIST TYPE IF USER DOES NOT CHANGE
     useEffect(() => {
@@ -262,7 +269,8 @@ const NewCustomer: React.FC<Props> = ({
                 groupId: null,
                 segmentId: selectedSegmentValue,
                 taskName: `${baseTaskName}`,
-                currencyCode: selectedCurrency,          
+                currencyCode: selectedCurrency || user?.currencyCode || "",
+  
                 taskTypeId: selectedTaskTypeId,
                 approvalId: selectedApprovals?.[0]?.id,
                 newCustomerName: newCustomerName,
@@ -419,13 +427,13 @@ const NewCustomer: React.FC<Props> = ({
                 </div>
 
                 <div className="px-4 py-3 bg-slate-50 flex justify-center gap-3">
-                    <button
+                    {/* <button
                         type="button"
                         onClick={() => navigate('/pricingAccount')}
                         className="bg-gray-100 border border-gray-300 px-4 py-1 rounded-md hover:bg-gray-150"
                     >
                         Back
-                    </button>
+                    </button> */}
                     <button
                         type="button"
                         onClick={save}

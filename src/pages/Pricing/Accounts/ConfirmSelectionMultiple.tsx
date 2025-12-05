@@ -62,6 +62,8 @@ const ConfirmSelectionMultiple: React.FC<Props> = ({
     const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
     const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
     const [localDataPeriod, setLocalDataPeriod] = useState(dataPeriod);
+    const [selectedCurrency, setSelectedCurrency] = useState<string>(currency || "");
+
 
     // ------------ RESPONSIVE ----------------
     useEffect(() => {
@@ -145,11 +147,22 @@ const ConfirmSelectionMultiple: React.FC<Props> = ({
     };
 
     const fetchCurrencies = async () => {
-        const response = await axios.get(
-            `https://10.2.6.130:5000/api/Pricing/getCurrencies`
-        );
-        setCurrencies(response.data);
-    };
+  const response = await axios.get(
+    `https://10.2.6.130:5000/api/Pricing/getCurrencies`
+  );
+
+  const list = response.data || [];
+  setCurrencies(list);
+
+  // ✅ DEFAULT FROM REDUX, NOT FIRST ITEM
+  if (user?.currencyCode && list.includes(user.currencyCode)) {
+    setSelectedCurrency(user.currencyCode);
+    onChangeCurrency && onChangeCurrency(user.currencyCode);
+  }
+
+  return list;
+};
+
 
     const fetchNewTaskSegmentId = async () => {
         const payload = {
@@ -239,7 +252,8 @@ const ConfirmSelectionMultiple: React.FC<Props> = ({
             groupId: null,
             segmentId: newSegmentId.segmentId,
             taskName: `${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`,
-            currencyCode: user.currencyCode,
+           currencyCode: selectedCurrency || user.currencyCode || "",
+
             taskTypeId: selectedTaskTypeId,
             approvalId: selectedApprovals[0].id,
             newCustomerName: "",
@@ -346,13 +360,22 @@ const ConfirmSelectionMultiple: React.FC<Props> = ({
 
                 {/* Currency */}
                 <div className="flex flex-col">
-                    <label className="mb-1 font-semibold text-slate-800">Currency</label>
-                    <select className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white">
-                        {currencies.map((c: any) => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
-                </div>
+  <label className="mb-1 font-semibold text-slate-800">Currency</label>
+  <select
+    value={selectedCurrency}
+    onChange={(e) => {
+      setSelectedCurrency(e.target.value);
+      onChangeCurrency && onChangeCurrency(e.target.value);
+    }}
+    className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
+  >
+    <option value="">Select Currency</option>
+    {currencies.map((c: any) => (
+      <option key={c} value={c}>{c}</option>
+    ))}
+  </select>
+</div>
+
 
                 <div className={`${isMobile ? "hidden" : "block"}`} />
 

@@ -205,6 +205,10 @@ const AddItem: React.FC = () => {
     }
   };
 
+  const handleBack = async ()=>{
+    navigate(`/pricingTable/${taskId.taskId}`);
+  }
+
   return (
     <div className="w-full h-full p-3 bg-white text-sm">
       <Loader isLoad={loading} />
@@ -255,7 +259,7 @@ const AddItem: React.FC = () => {
       )}
 
       <div className="flex justify-between items-center mt-3">
-        <button className="px-3 py-1 border rounded">Back to Task</button>
+        <button className="px-3 py-1 border rounded" onClick={handleBack}>Back to Task</button>
 
         <div className="flex gap-3">
           <button

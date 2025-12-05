@@ -251,14 +251,14 @@ export default function SmartFilterTable<T extends Record<string, any>>({
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <div
-  className="max-w-full overflow-x-auto relative"
-  style={{ maxHeight: "480px", overflowY: "auto" }}
->
+        className="max-w-full overflow-x-auto relative"
+        style={{ maxHeight: "480px", overflowY: "auto" }}
+      >
 
         <table className="min-w-full table-fixed text-sm">
           <thead
-  className="border-b border-gray-100 bg-[#0065bd] text-white sticky top-0 z-30"
->
+            className="border-b border-gray-100 bg-[#0065bd] text-white sticky top-0 z-30"
+          >
 
             <tr>
               {createOption && (
@@ -360,35 +360,44 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                           placeholder={`Type to search`}
                           onFocus={() => setOpenDropdown(col.accessor)}
                         />
+
                         {openDropdown === col.accessor &&
                           (filters[col.accessor] ?? "") !== "" &&
-                          col.filterOptions?.filter((opt: string) =>
-                            opt.toLowerCase().includes((filters[col.accessor] ?? "").toLowerCase())
-                          ).length > 0 && (
+                          (col.filterOptions ?? [])
+                            .filter((opt: any) =>
+                              String(opt?.name ?? opt)
+                                .toLowerCase()
+                                .includes(String(filters[col.accessor] ?? "").toLowerCase())
+                            ).length > 0 && (
+
                             <ul className="absolute z-20 bg-white border border-gray-200 rounded-md mt-1 shadow overflow-auto max-h-48">
-                              {col.filterOptions!
-                                .filter((opt: string) =>
-                                  opt
+                              {(col.filterOptions ?? [])
+                                .filter((opt: any) =>
+                                  String(opt?.name ?? opt)
                                     .toLowerCase()
-                                    .includes((filters[col.accessor] ?? "").toLowerCase())
+                                    .includes(String(filters[col.accessor] ?? "").toLowerCase())
                                 )
-                                .map((opt: string) => (
-                                  <li
-                                    key={opt}
-                                    onClick={() => {
-                                      // choose option: set filter and close; this will trigger parent via debounced effect
-                                      handleFilterChange(col.accessor, opt);
-                                      setOpenDropdown(null);
-                                    }}
-                                    className="px-2 py-1 hover:bg-blue-100 cursor-pointer whitespace-nowrap"
-                                  >
-                                    {opt}
-                                  </li>
-                                ))}
+                                .map((opt: any) => {
+                                  const label = String(opt?.name ?? opt);
+
+                                  return (
+                                    <li
+                                      key={label}
+                                      onClick={() => {
+                                        handleFilterChange(col.accessor, label);
+                                        setOpenDropdown(null);
+                                      }}
+                                      className="px-2 py-1 hover:bg-blue-100 cursor-pointer whitespace-nowrap"
+                                    >
+                                      {label}
+                                    </li>
+                                  );
+                                })}
                             </ul>
                           )}
                       </div>
                     )}
+
 
                     {/* SELECT */}
                     {filterType === "select" && (
@@ -419,18 +428,28 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                           onClick={() =>
                             setOpenDropdown(openDropdown === col.accessor ? null : col.accessor)
                           }
-                          title={Array.isArray(selectedValues) ? selectedValues.join(", ") : ""}
+                          title={
+                            Array.isArray(selectedValues)
+                              ? selectedValues.map((v: any) => v?.label ?? v).join(", ")
+                              : ""
+                          }
                         >
                           {Array.isArray(selectedValues) && selectedValues.length > 0
-                            ? selectedValues.join(", ").length > 25
-                              ? selectedValues.join(", ").slice(0, 25) + "..."
-                              : selectedValues.join(", ")
+                            ? selectedValues
+                              .map((v: any) => v?.label ?? String(v))
+                              .join(", ").length > 25
+                              ? selectedValues
+                                .map((v: any) => v?.label ?? String(v))
+                                .join(", ")
+                                .slice(0, 25) + "..."
+                              : selectedValues.map((v: any) => v?.label ?? String(v)).join(", ")
                             : `Select ${col.header}`}
+
                         </div>
 
                         {openDropdown === col.accessor && (
                           <div className="absolute z-20 bg-white border border-gray-200 rounded-md mt-1 shadow-lg 
-                max-h-60 overflow-y-auto p-1 w-[200px]">
+        max-h-60 overflow-y-auto p-1 w-[200px]">
 
                             <input
                               type="text"
@@ -439,9 +458,11 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                               value={filters[`${col.accessor}_search`] ?? ""}
                               onChange={(e) => {
                                 handleFilterChange(`${col.accessor}_search`, e.target.value);
-                                // we also want suggestions for multiselect search to parent (optional)
                                 if (typeof searchFilterData === "function") {
-                                  searchFilterData({ ...filters, [`${col.accessor}_search`]: e.target.value });
+                                  searchFilterData({
+                                    ...filters,
+                                    [`${col.accessor}_search`]: e.target.value,
+                                  });
                                 }
                               }}
                             />
@@ -455,7 +476,8 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                                   filters[col.accessor].length === col.filterOptions.length
                                 }
                                 onChange={(e) => {
-                                  if (e.target.checked) setMultiSelectAll(col.accessor, col.filterOptions ?? []);
+                                  if (e.target.checked)
+                                    setMultiSelectAll(col.accessor, col.filterOptions ?? []);
                                   else unsetMultiSelectAll(col.accessor);
                                 }}
                                 className="mr-2"
@@ -467,30 +489,50 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                                 : "Select All"}
                             </label>
 
-                            {(col.filterOptions ?? [])
-                              .filter((opt: string) =>
-                                opt
-                                  .toLowerCase()
-                                  .includes(((filters[`${col.accessor}_search`] as string) ?? "").toLowerCase())
-                              )
-                              .map((opt: string) => (
-                                <label
-                                  key={opt}
-                                  className="flex items-center px-2 py-1 text-xs hover:bg-blue-50 cursor-pointer whitespace-nowrap"
-                                >
-                                  <input
-                                    type="checkbox"
-                                    checked={Array.isArray(filters[col.accessor]) && (filters[col.accessor] as string[]).includes(opt)}
-                                    onChange={(e) => toggleMultiSelectOption(col.accessor, opt, e.target.checked)}
-                                    className="mr-2"
-                                  />
-                                  {opt}
-                                </label>
-                              ))}
+                            {
+                              (col.filterOptions ?? [])
+                                .filter((opt: any) =>
+                                  String(opt?.label ?? opt)
+                                    .toLowerCase()
+                                    .includes(
+                                      String(filters[`${col.accessor}_search`] ?? "").toLowerCase()
+                                    )
+                                )
+                                .map((opt: any) => {
+                                  const label = String(opt?.label ?? opt);   // ✅ what user sees
+                                  const value = opt?.value ?? label;        // ✅ what you filter by
+
+                                  return (
+                                    <label
+                                      key={value}
+                                      className="flex items-center px-2 py-1 text-xs hover:bg-blue-50 cursor-pointer whitespace-nowrap"
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={
+                                          Array.isArray(filters[col.accessor]) &&
+                                          filters[col.accessor].includes(opt)
+                                        }
+                                        onChange={(e) =>
+                                          toggleMultiSelectOption(
+                                            col.accessor,
+                                            opt,               // ✅ store FULL object for Segment
+                                            e.target.checked
+                                          )
+                                        }
+                                        className="mr-2"
+                                      />
+                                      {label}
+                                    </label>
+                                  );
+                                })
+
+                            }
                           </div>
                         )}
                       </div>
                     )}
+
 
                     {/* RANGE */}
                     {filterType === "range" && (
@@ -796,26 +838,30 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                         : ["UploadDate", "Created", "LastModified", "StartDate", "EndDate", "LastSaleDate"].includes(col.accessor)
                           ? formatToDate(cellValue)
                           : [
-                              "GrossSales",
-                              "GM",
-                              "GMPerc",
-                              "YRSales",
-                              "GrossMargin",
-                              "GMPercent",
-                              "GrossASP",
-                              "GM_P",
-                              "ManagerMarginFloor",
-                              "SalesmanMarginFloor",
-                              "SegManagerFloor",
-                              "SegSalesmanFloor",
-                              "SegTargetPrice",
-                              "LastYearSales",
-                              "YRSalesTracing",
-                              "OriginalValue",
-                            ].includes(col.accessor)
-                            ? cellValue == null || cellValue === ""
-                              ? 0
-                              : Number(cellValue).toFixed(2)
+                            "GrossSales",
+                            "GM",
+                            "GMPerc",
+                            "YRSales",
+                            "GrossMargin",
+                            "GMPercent",
+                            "GrossASP",
+                            "GM_P",
+                            "ManagerMarginFloor",
+                            "SalesmanMarginFloor",
+                            "SegManagerFloor",
+                            "SegSalesmanFloor",
+                            "SegTargetPrice",
+                            "LastYearSales",
+                            "YRSalesTracing",
+                            "OriginalValue",
+                            "GrossSalesTracing"
+                          ].includes(col.accessor)
+                            ? (() => {
+                              const num = Number(cellValue);
+                              const safeValue = isNaN(num) ? 0 : num;
+                              return `${user.currencyFormat} ${safeValue.toFixed(2)}`;
+                            })()
+
                             : col.accessor === "Due"
                               ? getDaysFromToday(cellValue)
                               : cellValue ?? "-";

@@ -1,7 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router";
+import { taskId } from "../../store/userSlice";
 type ItemsSelection = "blank" | "advanced";
 type Props = {
     taskName?: string;
@@ -62,7 +63,11 @@ const GroupConfirmSelection: React.FC<Props> = ({
     const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
     const [selectedSegment, setSelectedSegment] = useState<number | null>(null);
     const [localDataPeriod, setLocalDataPeriod] = useState(dataPeriod);
+    const [selectedPriceListType, setSelectedPriceListType] = useState<number | "">(priceListType ? Number(priceListType) : "");
+    const [createTaskId, setCreateTaskId] = useState<any>({});
+    const [selectedCurrency, setSelectedCurrency] = useState<string>("");
 
+    const dispatch = useDispatch();
     // ------------ RESPONSIVE ----------------
     useEffect(() => {
         setIsMobile(window.innerWidth <= 760);
@@ -89,7 +94,7 @@ const GroupConfirmSelection: React.FC<Props> = ({
 
     // ------------ MULTI-ACCOUNT TASK NAME ----------------
     const accountIds = selected.map((x: any) => x.AccountNumber);
-    const accountCount = selected.length;   
+    const accountCount = selected.length;
 
 
     // ------------ API CALLS -------------
@@ -126,45 +131,77 @@ const GroupConfirmSelection: React.FC<Props> = ({
 
 
     const fetchPriceListType = async () => {
-        const payload = {
-            viewName: `lkpDirectIndirect`,
-            sortBy: "",
-            sortByDirection: "",
-            filter: ``,
-            fieldList: "[Id] AS Value, Name as Text",
-            timeout: 0,
-        };
+        try {
+            const payload = {
+                viewName: `lkpDirectIndirect`,
+                sortBy: "",
+                sortByDirection: "",
+                filter: ``,
+                fieldList: "[Id] AS Value, Name as Text",
+                timeout: 0,
+            };
 
-        const response = await axios.post(
-            `https://10.2.6.130:5000/api/Metadata/getDataNoPaging`,
-            payload
-        );
-        setPriceListTypes(response.data);
+            const response = await axios.post(
+                `https://10.2.6.130:5000/api/Metadata/getDataNoPaging`,
+                payload
+            );
+            setPriceListTypes(response.data || []);
+
+            // set default numeric selection if not already set
+            if ((priceListType === "" || selectedPriceListType === "") && response.data && response.data.length > 0) {
+                const firstVal = response.data[0].Value;
+                setSelectedPriceListType(Number(firstVal));
+                // also notify parent if callback exists
+                onChangePriceListType && onChangePriceListType(Number(firstVal));
+            }
+
+            return response.data;
+        } catch (error: any) {
+            return null;
+        }
     };
 
     const fetchCurrencies = async () => {
-        const response = await axios.get(
-            `https://10.2.6.130:5000/api/Pricing/getCurrencies`
-        );
-        setCurrencies(response.data);
-    };
+  const response = await axios.get(
+    `https://10.2.6.130:5000/api/Pricing/getCurrencies`
+  );
+
+  setCurrencies(response.data || []);
+
+  // ✅ DEFAULT FROM REDUX (NOT FIRST DROPDOWN ITEM)
+  if (user?.currencyCode && response.data?.includes(user.currencyCode)) {
+    setSelectedCurrency(user.currencyCode);
+    onChangeCurrency && onChangeCurrency(user.currencyCode);
+  }
+};
+
 
     const fetchNewTaskSegmentId = async () => {
-        const payload = {
-            userId: user.userId,
-            countryId: selected[0].CountryID,
-            createTaskType: 2,
-            accountIds: [selected[0].AccountId],
-            siteIds: [],
-            priceLists: [],
-            groupId: null
-        };
+        try {
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
+            console.log('sel', selected[0]);
+            const payload = {
+                userId: user.userId,
+                countryId: selected[0].CountryId,
+                createTaskType: 2,
+                accountIds: hasAccount ? [selected[0].AccountId] : [],
+                siteIds: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: selected[0].GroupId
+            };
 
-        const response = await axios.post(
-            `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetNewTaskSegmentId`,
-            payload
-        );
-        setNewSegmentId(response.data);
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetNewTaskSegmentId`,
+                payload
+            );
+
+            setNewSegmentId(response.data);
+            return response.data;
+
+        } catch (error: any) {
+            return null;
+        }
     };
 
     const fetchAllSegments = async () => {
@@ -182,22 +219,33 @@ const GroupConfirmSelection: React.FC<Props> = ({
     };
 
     const fetchSalesHistoryMaxPeriod = async () => {
-        const payload = {
-            userId: user.userId,
-            countryId: selected[0].CountryID,
-            createTaskType: 2,
-            accounts: selected.map((x: any) => x.AccountId),
-            siteIds: [],
-            priceLists: [],
-            groupId: null
-        };
+        try {
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
 
-        const response = await axios.post(
-            `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetSalesHistoryMaxPeriod`,
-            payload
-        );
-        setSalesHistory(response.data);
+            const payload = {
+                userId: user.userId,
+                countryId: selected[0].CountryId,
+                createTaskType: 2,
+                accounts: hasAccount ? [selected[0].AccountId] : [],
+                siteIds: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: null
+            };
+
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/GetSalesHistoryMaxPeriod`,
+                payload
+            );
+
+            setSalesHistory(response.data);
+            return response.data;
+
+        } catch (error: any) {
+            return null;
+        }
     };
+
 
 
     // ------------ INIT API LOAD -------------
@@ -219,45 +267,72 @@ const GroupConfirmSelection: React.FC<Props> = ({
         if (selectedTaskTypeId) fetchNextTaskNumber(baseTaskName);
     }, [selectedTaskTypeId]);
 
-
-    // ------------ SAVE TASK -------------
     const navigate = useNavigate();
-
+    // ------------ SAVE TASK ------------- 
     const save = async () => {
-        const payload = {
-            userId: user.userId,
-            historyStartDate: 365,
-            historyEndDate: 0,
-            salesHistoryMaxPeriod: salesHistory[0]?.maxPeriod,
-            countryId: selected[0].CountryID,
-            createTaskType: 3,
-            accounts: [],
-            sites: [],
-            priceLists: [],
-            groupId: 603429,
-            segmentId: newSegmentId.segmentId,
-            taskName: `${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`,
-            currencyCode: user.currencyCode,
-            taskTypeId: selectedTaskTypeId,
-            approvalId: selectedApprovals[0].id,
-            newCustomerName: "",
-            dataSource: 0,
-            sales: 0,
-            directIndirect: 1,
-            priceListExpiry: null,
-            priceChange: null,
-            baseURL: "",
-            specifiedItems: []
-        };
-
-        const response = await axios.post(
-            `https://vm-www-dprice01.icumed.com:5000/api/Pricing/AddTask`,
-            payload
-        );
-
-        if (response.data?.taskId > 0) navigate("/taskDetails");
-        else navigate("/groupsData");
+        const response = await createTask();
+        if (response?.taskId > 0) navigate("/taskDetails");
+        else {
+            alert("Something went wrong! Please try again.");
+            navigate("/groupsData");
+        }
     };
+
+    const createTask = async () => {
+        try {
+            if (!selectedSegment || selectedSegment === 0) {
+                alert("Please select a Customer Segment before saving.");
+                return; // 🚫 STOP API CALL
+            }
+            const hasAccount = selected[0].AccountId !== undefined && selected[0].AccountId !== null;
+            const hasSite = selected[0].SiteId !== undefined && selected[0].SiteId !== null;
+
+            const payload = {
+                userId: user.userId,
+                historyStartDate: 365,
+                historyEndDate: 0,
+                salesHistoryMaxPeriod: salesHistory[0]?.maxPeriod,
+                countryId: selected[0].CountryId,
+                createTaskType: 3,
+                accounts: hasAccount ? [selected[0].AccountId] : [],
+                sites: hasSite ? [selected[0].SiteId] : [],
+                priceLists: [],
+                groupId: selected[0].GroupId,
+                segmentId: selectedSegment,
+                taskName: `${baseTaskName}${nextTaskNumber?.nextNumber ? ` (${nextTaskNumber.nextNumber})` : ""}`,
+                // ensure currencyCode uses selectedCurrency (string)
+                currencyCode: selectedCurrency || user.currencyCode || "",
+                taskTypeId: selectedTaskTypeId,
+                approvalId: selectedApprovals[0].id,
+                newCustomerName: "",
+                dataSource: 0,
+                sales: 0,
+                // ensure directIndirect is numeric (if blank, fallback to 0)
+                directIndirect: selectedPriceListType === "" ? 0 : Number(selectedPriceListType),
+                priceListExpiry: null,
+                priceChange: null,
+                baseURL: "",
+                specifiedItems: []
+            };
+
+            console.log("CreateTask Payload", payload);
+
+            const response = await axios.post(
+                `https://vm-www-dprice01.icumed.com:5000/api/Pricing/AddTask`,
+                payload
+            );
+            console.log('Task Details', response.data);
+            dispatch(taskId(response.data));
+            setCreateTaskId(response.data);
+            return response.data;
+
+        } catch (error: any) {
+            console.error("createTask error", error);
+            return null;
+        }
+    };
+
+
     const baseTaskName = `${getTaskPrefix(selectedTaskTypeId ?? 0)} – ${selected[0].PartyNumber} – ${selected[0].GroupName}`;
 
 
@@ -328,6 +403,7 @@ const GroupConfirmSelection: React.FC<Props> = ({
                 </div>
 
                 {/* Customer Segment */}
+                {/* Customer Segment */}
                 <div className="flex flex-col">
                     <label className="mb-1 font-semibold text-slate-800">Customer Segment</label>
                     <select
@@ -335,23 +411,37 @@ const GroupConfirmSelection: React.FC<Props> = ({
                         onChange={(e) => setSelectedSegment(Number(e.target.value))}
                         className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
                     >
+                        <option value="">Select Segment</option>
                         {allSegments.map((option: any) => (
-                            <option key={option.segmentId} value={option.segmentName}>
+                            <option key={option.segmentId} value={option.segmentId}>
                                 {option.segmentName}
                             </option>
                         ))}
                     </select>
                 </div>
 
+
                 {/* Currency */}
-                <div className="flex flex-col">
-                    <label className="mb-1 font-semibold text-slate-800">Currency</label>
-                    <select className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white">
-                        {currencies.map((c: any) => (
-                            <option key={c} value={c}>{c}</option>
-                        ))}
-                    </select>
-                </div>
+                {/* Currency */}
+<div className="flex flex-col">
+  <label className="mb-1 font-semibold text-slate-800">Currency</label>
+  <select
+    value={selectedCurrency}   // ✅ controlled
+    onChange={(e) => {
+      setSelectedCurrency(e.target.value);
+      onChangeCurrency && onChangeCurrency(e.target.value);
+    }}
+    className="w-64 px-2 py-1 border border-gray-300 rounded-sm bg-white"
+  >
+    <option value="">Select Currency</option>
+    {currencies.map((c: any) => (
+      <option key={c} value={c}>
+        {c}
+      </option>
+    ))}
+  </select>
+</div>
+
 
                 <div className={`${isMobile ? "hidden" : "block"}`} />
 
@@ -409,8 +499,8 @@ const GroupConfirmSelection: React.FC<Props> = ({
 
                 <div className="flex flex-col gap-1">
                     {selected.map((acc: any) => (
-                        <div key={acc.AccountId} className="text-sky-700">
-                            • {acc.AccountName}
+                        <div key={acc.GroupId} className="text-sky-700">
+                            • {acc.GroupName}
                         </div>
                     ))}
                 </div>

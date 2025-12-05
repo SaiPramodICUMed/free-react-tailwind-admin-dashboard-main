@@ -140,7 +140,7 @@ export default function PricingDashboard() {
    { label: "Accounts", to: "../pricingAccount", value: animated.accounts },
   { label: "Groups", to: "../groupsData", value: animated.groups },
     { label: "Price Lists", to: "../priceListsData", value: animated.priceLists },
-    { label: "ERP Load", to: "../completedTasks", value: null },
+    // { label: "ERP Load", to: "../completedTasks", value: null },
   ];
 
   return (
