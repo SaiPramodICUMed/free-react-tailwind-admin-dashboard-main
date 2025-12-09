@@ -30,9 +30,12 @@ import PriceListsData from "./pages/Pricing/PriceListsData";
 import PricingAccount from "./pages/Pricing/Accounts/Account";
 import CompletedTasks from "./pages/Pricing/ERPLoad/CompletedTasks";
 import Advanced from "./pages/Reports/Advanced";
-import BasicReports from "./pages/Reports/BasicReports";
+import BasicReports from "./pages/Reports/BasicReports/BasicReports";
 import Explorer from "./pages/Reports/Explorer";
-import SIA from "./pages/Reports/SIA";
+import BasicAccounts from "./pages/Reports/BasicReports/Accounts/BasicAccounts";
+import BasicBuyingGroups from "./pages/Reports/BasicReports/BuyingGroups/BasicBuyingGroups";
+import BasicPriceLists from "./pages/Reports/BasicReports/PriceLists/BasicPriceLists";
+import BasicItems from "./pages/Reports/BasicReports/Items/BasicItems";
 
 import Segmentation from "./pages/Strategy/Segmentation";
 import SegmentationGroup from "./pages/Strategy/SegmentationGroup";
@@ -119,7 +122,12 @@ export default function App() {
                 <Route index path="/advanced" element={<Advanced />} />
                 <Route index path="/basicReports" element={<BasicReports />} />
                 <Route index path="/explorer" element={<Explorer />} />
-                <Route index path="/sia" element={<SIA />} />
+
+                <Route index path="/basic-accounts" element={<BasicAccounts />} />
+                <Route index path="/basic-buying-groups" element={<BasicBuyingGroups />} />
+                <Route index path="/basic-price-lists" element={<BasicPriceLists />} />
+                <Route index path="/basic-items" element={<BasicItems />} />
+                
 
                 <Route index path="/segmentation" element={<Segmentation />} />
                 <Route index path="/segmentationGroup" element={<SegmentationGroup />} />
