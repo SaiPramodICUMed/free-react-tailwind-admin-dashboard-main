@@ -448,8 +448,15 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                         </div>
 
                         {openDropdown === col.accessor && (
-                          <div className="absolute z-20 bg-white border border-gray-200 rounded-md mt-1 shadow-lg 
-        max-h-60 overflow-y-auto p-1 w-[200px]">
+                          <div
+                            className="absolute z-20 bg-white border border-gray-200 rounded-md mt-1 shadow-lg 
+           max-h-60 overflow-y-auto p-1 w-[200px]"
+                            style={{
+                              right: "0px",   // ✅ force open toward LEFT
+                              left: "auto",   // ✅ prevent overflow to right
+                            }}
+                          >
+
 
                             <input
                               type="text"
@@ -552,7 +559,14 @@ export default function SmartFilterTable<T extends Record<string, any>>({
                         </div>
 
                         {openDropdown === col.accessor && (
-                          <div className="absolute z-30 bg-white border border-gray-200 rounded-md shadow-lg p-3 mt-1 w-[260px]">
+                          <div
+                            className="absolute z-30 bg-white border border-gray-200 rounded-md shadow-lg p-3 mt-1 w-[260px]"
+                            style={{
+                              right: "0px",   // ✅ forces popup to open toward LEFT
+                              left: "auto",   // ✅ prevents overflow to right
+                            }}
+                          >
+
                             <div className="flex justify-between text-xs text-gray-600 mb-1">
                               <span>{col.min}</span>
                               <span>{col.max}</span>

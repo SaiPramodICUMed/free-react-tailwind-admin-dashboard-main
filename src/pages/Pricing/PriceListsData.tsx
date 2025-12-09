@@ -8,6 +8,9 @@ import Pagination from "../../components/Pagination";
 
 export default function PriceListsData() {
   const user = useSelector((state: any) => state.user.users);
+  // ✅ TOP DROPDOWN STATES (DEFAULT FIRST VALUE)
+  const [validFilter, setValidFilter] = useState("All");
+  const [salesFilter, setSalesFilter] = useState("With 1 Year Sales");
 
   // grid state
   const [inboxData, setInboxData] = useState<any[]>([]);
@@ -34,6 +37,27 @@ export default function PriceListsData() {
   const [filtersState, setFiltersState] = useState<Record<string, any>>({});
 
   const navigate = useNavigate();
+
+  // ---------------- TOP DROPDOWN FILTER SQL ----------------
+  const buildTopFilterSql = () => {
+    let sql = `AND UserID = ${user.userId}`;
+
+    // ✅ SALES FILTER
+    if (salesFilter === "With 1 Year Sales") {
+      sql += ` AND (LastYearSales IS NOT NULL AND LastYearSales <> 0)`;
+    } else if (salesFilter === "With Sales") {
+      sql += ` AND (AllSales IS NOT NULL AND AllSales <> 0)`;
+    }
+
+    // ✅ VALID FILTER
+    if (validFilter === "Currently valid") {
+      sql += ` AND CountryId = 14 AND CurrentlyActive = 1`;
+    } else if (validFilter === "Valid in last year") {
+      sql += ` AND CountryId = 14 AND ActiveInLastYear = 1`;
+    }
+
+    return sql;
+  };
 
   // helper: escape single quote for SQL
   const escapeSql = (s: string) => (s == null ? "" : String(s).replace(/'/g, "''"));
@@ -106,7 +130,7 @@ export default function PriceListsData() {
     return combined;
   };
 
-  // --------- Data fetchers (grid / count) ----------
+  // ---------------- GRID DATA FETCH ----------------
   const fetchData = async (start: number, end: number, filterOverride?: string) => {
     setLoading(true);
     try {
@@ -116,42 +140,45 @@ export default function PriceListsData() {
         lastRow: end,
         sortBy: "Id",
         sortByDirection: "asc",
-        filter: filterOverride ?? `AND UserId = ${user.userId} AND (LastYearSales IS NOT NULL AND LastYearSales <> 0)`,
+        filter: filterOverride ?? buildTopFilterSql(),
         fieldList: "*",
         timeout: 0,
       };
 
-      const resp = await axios.post(`https://10.2.6.130:5000/api/Metadata/getData`, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const resp = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getData`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       setInboxData(resp.data);
       setLoading(false);
-      return resp.data;
-    } catch (err: any) {
-      console.error("Error fetching PriceLists data:", err?.message ?? err);
+    } catch (err) {
+      console.error("Fetch error", err);
       setLoading(false);
-      return null;
     }
   };
 
   const fetchTotalCount = async (sqlFilter: string) => {
     try {
       const payload = {
-        viewName: `vw_PriceLists`,
+        viewName: "vw_PriceLists",
         filter: sqlFilter,
       };
 
-      const resp = await axios.post(`https://10.2.6.130:5000/api/Metadata/getViewCount`, payload, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const resp = await axios.post(
+        `https://10.2.6.130:5000/api/Metadata/getViewCount`,
+        payload,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
       setTotalRecords(resp.data.count);
       setTotalPages(Math.ceil(resp.data.count / recordsPerPage));
     } catch (err) {
-      console.error("Error fetching PriceLists count", err);
+      console.error("Count error", err);
     }
   };
+
 
   // --------- Suggestion / minmax API helper ----------
   const suggestionApi = async (field: string, searchTerm = "", special = false) => {
@@ -185,11 +212,53 @@ export default function PriceListsData() {
       setNameOptions(await suggestionApi("Name"));
       setDescriptionOptions(await suggestionApi("Description"));
       // Type may return list of values
-      setTypeOptions(await suggestionApi("Type"));
+      const typeRes = await suggestionApi("Type");
+
+      if (Array.isArray(typeRes)) {
+        const mapped = typeRes
+          .filter((x: any) => x?.id || typeof x === "string")
+          .map((x: any) => {
+            const val = x?.id ?? x;  // sometimes string, sometimes object
+            return { value: val, label: val };
+          });
+
+        setTypeOptions(mapped);
+      } else {
+        setTypeOptions([]);
+      }
+
       setIdOptions(await suggestionApi("Id"));
       setContractOptions(await suggestionApi("ContractID"));
-      setActiveOptions(await suggestionApi("Active"));
-      setCountryOptions(await suggestionApi("CountryName"));
+      const activeRes = await suggestionApi("Active");
+
+      if (Array.isArray(activeRes)) {
+        const mapped = activeRes
+          .filter((x: any) => x?.id || typeof x === "string" || typeof x === "number")
+          .map((x: any) => {
+            const val = x?.id ?? x;  // API may return {id:"Yes"} or "Yes" or 1
+            return { value: val, label: val };
+          });
+
+        setActiveOptions(mapped);
+      } else {
+        setActiveOptions([]);
+      }
+
+      const ctryRes = await suggestionApi("CountryName");
+
+      if (Array.isArray(ctryRes)) {
+        const mapped = ctryRes
+          .filter((x: any) => x?.id || typeof x === "string")
+          .map((x: any) => {
+            const val = x?.id ?? x;
+            return { value: val, label: val };
+          });
+
+        setCountryOptions(mapped);
+      } else {
+        setCountryOptions([]);
+      }
+
 
       setLastYearSalesRange(await suggestionApi("LastYearSales", "", true));
       setYrSalesTracingRange(await suggestionApi("YRSalesTracing", "", true));
@@ -209,17 +278,22 @@ export default function PriceListsData() {
     setCurrentPage(1);
   };
 
+  // ---------------- FILTER FROM TABLE ----------------
   const searchData = (filtersObj: Record<string, any>) => {
-    onFiltersFromTable(filtersObj || {});
+    setFiltersState(filtersObj || {});
+    const sql = buildTopFilterSql();
+    fetchTotalCount(sql);
+    fetchData(1, recordsPerPage, sql);
+    setCurrentPage(1);
   };
 
-  // ---------------- pagination handlers ----------------
+  // ---------------- PAGINATION ----------------
   const setPageChange = (pageNumber: any, listPerPage?: any) => {
     const size = listPerPage || recordsPerPage;
     setCurrentPage(pageNumber);
     const start = (pageNumber - 1) * size + 1;
     const end = pageNumber * size;
-    const sql = buildFilterStringFromObject(filtersState || {});
+    const sql = buildTopFilterSql();
     fetchData(start, end, sql);
   };
 
@@ -227,21 +301,17 @@ export default function PriceListsData() {
     setRecordsPerPage(size);
     setCurrentPage(1);
     setTotalPages(Math.ceil(totalRecords / size));
-    const sql = buildFilterStringFromObject(filtersState || {});
+    const sql = buildTopFilterSql();
     fetchData(1, size, sql);
   };
 
-  // ---------------- initial load ----------------
+  // ---------------- INITIAL LOAD ----------------
   useEffect(() => {
-    fetchTotalCount(`AND UserId = ${user.userId} AND (LastYearSales IS NOT NULL AND LastYearSales <> 0)`);
-    fetchData(1, user.gridPageSize);
+    const sql = buildTopFilterSql();
+    fetchTotalCount(sql);
+    fetchData(1, user.gridPageSize, sql);
     fetchFilterMetadata();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    setTotalPages(Math.ceil(totalRecords / recordsPerPage));
-  }, [recordsPerPage, totalRecords]);
+  }, [validFilter, salesFilter]); // ✅ dropdown reactive
 
   // ---------------- columns with filter metadata ----------------
   const columns = [
@@ -282,11 +352,42 @@ export default function PriceListsData() {
     <>
       <Loader isLoad={loading} />
 
-      <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-        <span className="font-medium" onClick={() => { navigate("/pricingDashBoard"); }}>
-          Pricing
-        </span>{" "}
-        / <span className="text-gray-500 font-medium">&nbsp;Price Lists</span>
+      <nav className="flex items-center justify-between text-sm text-gray-600 mb-4">
+        <div>
+          <span className="font-medium" onClick={() => navigate("/pricingDashBoard")}>
+            Pricing
+          </span>{" "}
+          / <span className="text-gray-500 font-medium">Price Lists</span>
+        </div>
+
+        {/* ✅ TOP RIGHT STATIC DROPDOWNS */}
+        <div className="flex items-center gap-4">
+          <div>
+            <label className="mr-2 text-sm font-medium">Valid Filter:</label>
+            <select
+              value={validFilter}
+              onChange={(e) => setValidFilter(e.target.value)}
+              className="border px-2 py-1 rounded"
+            >
+              <option>All</option>
+              <option>Currently valid</option>
+              <option>Valid in last year</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="mr-2 text-sm font-medium">Sales Filter:</label>
+            <select
+              value={salesFilter}
+              onChange={(e) => setSalesFilter(e.target.value)}
+              className="border px-2 py-1 rounded"
+            >
+              <option>With 1 Year Sales</option>
+              <option>With Sales</option>
+              <option>All</option>
+            </select>
+          </div>
+        </div>
       </nav>
 
       <div className="grid grid-cols-6 gap-4 md:gap-3">
@@ -295,7 +396,6 @@ export default function PriceListsData() {
             page={"Pricing - Price Lists"}
             inboxData={inboxData}
             columns={columns}
-            // enable SmartFilterTable calling searchData
             searchData={searchData}
           />
         </div>
@@ -308,13 +408,12 @@ export default function PriceListsData() {
               totalRecords={totalRecords}
               recordsPerPage={recordsPerPage}
               onPageChange={setPageChange}
-              onRecordsPerPageChange={(val) => {
-                changeRecordsPerPage(val);
-              }}
+              onRecordsPerPageChange={(val) => changeRecordsPerPage(val)}
             />
           )}
         </div>
       </div>
     </>
   );
+
 }

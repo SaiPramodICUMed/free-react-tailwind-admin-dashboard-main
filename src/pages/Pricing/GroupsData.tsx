@@ -176,9 +176,37 @@ export default function GroupsData() {
       setPartyNumbers(await suggestionApi("PartyNumber"));
 
       // SegmentName list
-      setSegments(await suggestionApi("SegmentName"));
+      const seg = await suggestionApi("SegmentName");
 
-      setCountries(await suggestionApi("CountryName"));
+if (Array.isArray(seg)) {
+  const mappedSegments = seg
+    .filter((s: any) => s?.id)
+    .map((s: any) => ({
+      value: s.id,
+      label: s.id,
+    }));
+
+  setSegments(mappedSegments);
+} else {
+  setSegments([]);
+}
+
+
+      const ctry = await suggestionApi("CountryName");
+
+if (Array.isArray(ctry)) {
+  const mappedCountries = ctry
+    .filter((c: any) => c?.id)
+    .map((c: any) => ({
+      value: c.id,
+      label: c.id,
+    }));
+
+  setCountries(mappedCountries);
+} else {
+  setCountries([]);
+}
+
 
       const accRange = await suggestionApi("AccountsCount", "", true);
       const yrRange = await suggestionApi("YRSales", "", true);

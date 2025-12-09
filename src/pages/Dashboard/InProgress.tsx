@@ -172,7 +172,7 @@ export default function InProgress() {
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
-
+      console.log('data', response.data);
       setInboxData(response.data);
       setLoading(false);
     } catch (error: any) {

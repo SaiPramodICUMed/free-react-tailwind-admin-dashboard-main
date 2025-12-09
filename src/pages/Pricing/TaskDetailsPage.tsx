@@ -8,8 +8,8 @@ import { useParams } from "react-router-dom";
 const TaskDetailsPage: React.FC = () => {
   const user = useSelector((state: any) => state.user.users);
   //const taskIdState = useSelector((state: any) => state.user.taskDetails);
-    const { id } = useParams();
-      console.log('id', id);
+  const { id } = useParams();
+  console.log('id', id);
   console.log("Redux USER:", user);
   //console.log("Redux TASK:", taskIdState);
 
@@ -20,9 +20,12 @@ const TaskDetailsPage: React.FC = () => {
   const [validFromType, setValidFromType] = useState<"immediately" | "date">(
     "date"
   );
+  // default changed to duration since your UI uses a dropdown for Valid Until
   const [validUntilType, setValidUntilType] = useState<"duration" | "date">(
-    "date"
+    "duration"
   );
+  const [validUntilDuration, setValidUntilDuration] = useState("1 year");
+
 
   const [validFromDate, setValidFromDate] = useState<Date | null>(null);
   const [validUntilDate, setValidUntilDate] = useState<Date | null>(null);
@@ -31,6 +34,99 @@ const TaskDetailsPage: React.FC = () => {
   const [contactNumber, setContactNumber] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
+  const [reference, setReference] = useState("");
+
+  // -------------- DEFAULT DATES (Auto-set today and +1 year) ----------------
+  useEffect(() => {
+    const today = new Date();
+    setValidFromDate(today);
+
+    const nextYear = new Date();
+    nextYear.setFullYear(nextYear.getFullYear() + 1);
+    setValidUntilDate(nextYear);
+  }, []);
+
+   const handleSave = async () => {
+    try {
+      const today = new Date();
+
+      // -------- START DATE --------
+      const startDate =
+        validFromType === "immediately"
+          ? today.toISOString()
+          : validFromDate
+          ? validFromDate.toISOString()
+          : null;
+
+      // -------- EXPIRY DATE LOGIC --------
+      let expiryDays = 365;
+
+      const durationMap: any = {
+        "1 month": 30,
+        "3 months": 90,
+        "6 months": 180,
+        "1 year": 365,
+        "2 years": 730,
+      };
+
+      if (validUntilType === "duration") {
+        expiryDays = durationMap[validUntilDuration] || 365;
+      } else if (validUntilType === "date" && validUntilDate) {
+        const diff =
+          (validUntilDate.getTime() - new Date(startDate!).getTime()) /
+          (1000 * 60 * 60 * 24);
+        expiryDays = Math.max(1, Math.round(diff));
+      }
+
+      // -------- PAYLOAD (Taken from your working TaskDetails.tsx) --------
+      const payload = {
+        taskID: Number(id),
+        userID: user.userId,
+        contact: reference,         // mapping same as TaskDetails.tsx
+        contactNumber: contactNumber,
+        address: address,
+        comments: null,
+        email: email,
+        name: contact,
+        taskTypeID: 0,
+        currencyCode: null,
+        customerSegmentId: null,
+        approvalID: null,
+        expiryDate: expiryDays,
+        immediately: validFromType === "immediately",
+        startDate: startDate,
+        tenderExclusivity: false,
+        tenderPriceQualityEnabled: false,
+        tenderPriceQualityValue: 0,
+        tenderReference: reference,
+        tenderType: null,
+        tenderVolumeCommitment: false,
+        tenderStartImmediately: false,
+        tenderStartDate: null,
+        tenderLength: 0,
+        tenderExtensionOption: false,
+        tenderExtensionMultiplier: 0,
+        tenderExtensionMonths: null,
+        tenderCustomDates: false
+      };
+
+      console.log("PAYLOAD SENT:", payload);
+
+      const response = await axios.post(
+        "https://vm-www-dprice01.icumed.com:5000/api/Pricing/SaveTaskDetails",
+        payload
+      );
+
+      console.log("Save Response:", response.data);
+
+      alert("Task details saved successfully!");
+      //navigate("/addItem");
+    } catch (error: any) {
+      console.error("SaveTaskDetails ERROR:", error);
+      alert("Error saving task details. Check console.");
+    }
+  };
+
 
   // -------------- LOAD TASK DETAILS ----------------
   const loadTaskDetails = async () => {
@@ -57,13 +153,14 @@ const TaskDetailsPage: React.FC = () => {
       setContactNumber(data.contactNumber || "");
       setEmail(data.email || "");
       setAddress(data.address || "");
+      setReference(data.tenderReference || "");
 
       // Valid From
       if (data.immediately) {
         setValidFromType("immediately");
       } else {
         setValidFromType("date");
-        setValidFromDate(data.startDate ? new Date(data.startDate) : null);
+        setValidFromDate(data.startDate ? new Date(data.startDate) : validFromDate);
       }
 
       // Valid Until
@@ -85,12 +182,9 @@ const TaskDetailsPage: React.FC = () => {
       console.log('user and task', user?.userId, id);
       loadTaskDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, id]);
 
-  // -------------- SAVE ----------------
-  const handleSave = () => {
-    console.log("Saving...");
-  };
 
   if (loading || !task) {
     return (
@@ -208,11 +302,13 @@ const TaskDetailsPage: React.FC = () => {
                 <select
                   className="border rounded px-2 py-1.5 w-36 text-sm"
                   disabled={validUntilType !== "duration"}
+                  value={validUntilDuration}                // ★ default selected = "1 year"
+                  onChange={(e) => setValidUntilDuration(e.target.value)}
                 >
                   <option>1 month</option>
                   <option>3 months</option>
                   <option>6 months</option>
-                  <option>1 year</option>
+                  <option>1 year</option>                   {/* ★ default option */}
                   <option>2 years</option>
                 </select>
               </label>
@@ -284,27 +380,16 @@ const TaskDetailsPage: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label className="text-xs font-medium">Status</label>
-            <input
-              className="mt-1 w-full border rounded px-2 py-1 text-sm bg-gray-50"
-              value={task.status ?? ""}
-              readOnly
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-medium">Created</label>
-            <input
-              className="mt-1 w-full border rounded px-2 py-1 text-sm bg-gray-50"
-              value={
-                task.created
-                  ? new Date(task.created).toLocaleString()
-                  : ""
-              }
-              readOnly
-            />
-          </div>
+          <div className="col-span-2">
+                <label className="font-semibold">Reference:</label>
+                <input
+                  className="w-full mt-1 border rounded px-2 py-1.5"
+                  value={reference}
+                  onChange={(e) => {
+                   setReference(e.target.value)
+                  }}
+                />
+              </div>
 
         </div>
       </div>

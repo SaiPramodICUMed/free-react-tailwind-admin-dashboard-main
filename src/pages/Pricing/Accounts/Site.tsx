@@ -211,13 +211,22 @@ export default function Site() {
 
       // SegmentName returns plain names (per your correction)
       const seg = await suggestionApi("SegmentName");
-      if (Array.isArray(seg)) {
-        // Server likely returns strings or objects; map to strings
-        const segNames = seg.map((s: any) => (typeof s === "string" ? s : s.SegmentName ?? s.segmentname ?? String(s)));
-        setSegments(Array.from(new Set(segNames)));
-      } else {
-        setSegments([]);
-      }
+
+if (Array.isArray(seg)) {
+  const mappedSegments = seg
+    .filter((s: any) => s?.id) // ensure valid
+    .map((s: any) => ({
+      value: s.id,   // this is the actual segment text
+      label: s.id,   // show in dropdown
+    }));
+
+  setSegments(mappedSegments);
+} else {
+  setSegments([]);
+}
+
+
+
 
       setTypes(await suggestionApi("Type"));
       setParents(await suggestionApi("ParentCompany"));
@@ -225,7 +234,22 @@ export default function Site() {
       setPostalCodes(await suggestionApi("PostalCode"));
       setSiteCities(await suggestionApi("City"));
       setProvinces(await suggestionApi("Province"));
-      setCountries(await suggestionApi("CountryName"));
+      const ctryList = await suggestionApi("CountryName");
+
+if (Array.isArray(ctryList)) {
+  const mapped = ctryList.map((c: any) => {
+    const name = c?.CountryName ?? c?.countryname ?? c?.id ?? c;
+    return {
+      value: name,
+      label: name,
+    };
+  });
+
+  setCountries(mapped);   // ✅ accessible, inside the if block
+} else {
+  setCountries([]);       // ✅ fallback
+}
+
 
       setYrSalesRange(await suggestionApi("YRSales", "", true));
       setGrossSalesRange(await suggestionApi("YRSales", "", true)); // if needed for sites (you can change to GrossSalesTracing if exists)
